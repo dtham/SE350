@@ -35,6 +35,7 @@ public class Quote {
     
     public QuoteSide getQuoteSide(Bookside sideIn){
         side.setSide(sideIn);
+        return null;
     }
     
     public String toString(){
