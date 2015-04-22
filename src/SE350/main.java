@@ -1,6 +1,8 @@
 
 package SE350;
 
+
+
 import java.util.ArrayList;
 
 // HERE you should add any imports for your classes that you need to make this class compile.
@@ -8,7 +10,7 @@ import java.util.ArrayList;
 
 
 
-public class SE350 {
+public class main {
 
     private static final ArrayList<Price> testPriceHolder = new ArrayList<>();
 

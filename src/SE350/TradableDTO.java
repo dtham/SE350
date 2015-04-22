@@ -9,7 +9,7 @@ public class TradableDTO {
     public int remainingVolume;
     public int cancelledVolume;
     public String user;
-    public BookSide side;
+    public Bookside side;
     public boolean isQuote = false;
     public String id;
     
