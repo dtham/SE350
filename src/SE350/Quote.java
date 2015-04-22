@@ -5,6 +5,10 @@ package SE350;
 public class Quote {
     String UserName;
     String StockSymbol;
+    String current_time;
+	int OriQuantity; 
+	int CanQuantity; 
+	String ID; 
     QuoteSide Buy = new QuoteSide();
     QuoteSide Sell = new QuoteSide();
     Price PriceOrder = new Price();
@@ -16,7 +20,9 @@ public class Quote {
         UserName = userName; 
         StockSymbol = productSymbol;
         PriceOrder = buyPrice; 
-        Buy(UserName, StockSymbol, PriceOrder, buyVolume, bookSide); //bookside not created yet.
+        Buy(UserName, StockSymbol, PriceOrder, buyVolume, bookSide); 
+        current_time = Long.toString(System.nanoTime());
+    	ID = UserName + StockSymbol + current_time;
     }
     
     public String getUserName(){
@@ -34,5 +40,6 @@ public class Quote {
     public String toString(){
         String sum_string;
         sum_string = StockSymbol + "$" + PriceOrder + "( Original Vol: " + OriQuantity + ", CXL'd Vol: " + CanQuantity + "), ID: (" + ID + ")";
-    } //incomplete do this
+        return sum_string;
+    } 
 }

@@ -1,5 +1,4 @@
-
-package SE350;
+package src.SE350;
 
 
 public class Bookside {
