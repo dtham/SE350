@@ -2,6 +2,8 @@
 package SE350;
 
 
+
+
 public class Quote {
     String UserName;
     String StockSymbol;
@@ -20,7 +22,7 @@ public class Quote {
         UserName = userName; 
         StockSymbol = productSymbol;
         PriceOrder = buyPrice; 
-        Buy(UserName, StockSymbol, PriceOrder, buyVolume, bookSide); 
+        Buy(UserName, StockSymbol, PriceOrder, buyVolume, side); 
         current_time = Long.toString(System.nanoTime());
     	ID = UserName + StockSymbol + current_time;
     }

@@ -17,7 +17,7 @@ public class Order {
     Bookside b_side = new Bookside();
 
     
-    public void Order(String userName, String productSymbol, Price orderPrice, int originalVolume, Bookside side)
+    public void Order(String userName, String productSymbol, Price orderPrice, int originalVolume, String side)
     {
         UserID = userName; 
         product = productSymbol;

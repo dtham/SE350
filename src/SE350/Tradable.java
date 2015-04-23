@@ -8,7 +8,7 @@ package SE350;
 public class Tradable {
     Order TradableO = new Order();
     //Price TradableP = new Price();
-    Bookside b_side = new Booksides();
+    Bookside b_side = new Bookside();
     
     String getProduct(){
         return TradableO.product; 
