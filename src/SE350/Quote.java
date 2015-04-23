@@ -35,7 +35,7 @@ public class Quote {
         return StockSymbol;
     }
     
-    public QuoteSide getQuoteSide(Bookside sideIn){
+    public QuoteSide getQuoteSide(String sideIn){
         side.setSide(sideIn);
         return null;
     }

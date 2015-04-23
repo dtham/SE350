@@ -11,16 +11,16 @@ public class QuoteSide {
 	int CanQuantity; 
 	String ID; 
 	Price PriceOrder = new Price();
-	   
+        Bookside b_side = new Bookside();
 	
 	
 	
-    public void QuoteSide (String userName, String productSymbol, Price sidePrice, int originalVolume, Bookside side){
+    public void QuoteSide (String userName, String productSymbol, Price sidePrice, int originalVolume, String side){
     	UserID = userName;
     	product = productSymbol;
     	PriceOrder = sidePrice;
     	OriQuantity = originalVolume;
-    	side.setSide(side);
+    	b_side.setSide(side);
     	current_time = Long.toString(System.nanoTime());
     	ID = UserID + product + current_time;
             }
