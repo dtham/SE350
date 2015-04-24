@@ -23,7 +23,8 @@ public class QuoteSide {
     	b_side.setSide(side);
     	current_time = Long.toString(System.nanoTime());
     	ID = UserID + product + current_time;
-            }
+    }
+    
     public String getProduct() {
  	   return this.product;
     }
