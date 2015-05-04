@@ -1,48 +1,47 @@
 
 package SE350;
 
+import SE350.GlobalConstants.BookSide;
+
+
 
 
 
 public class Quote {
-    String UserName;
-    String StockSymbol;
-    String current_time;
-	int OriQuantity; 
-	int CanQuantity; 
-	String ID; 
-    QuoteSide Buy = new QuoteSide();
-    QuoteSide Sell = new QuoteSide();
-    Price PriceOrder = new Price();
-    Bookside side = new Bookside();
-   
     
-    public void Quote(String userName, String productSymbol, Price buyPrice,
-            int buyVolume, Price sellPrice, int sellVolume){
-        UserName = userName; 
-        StockSymbol = productSymbol;
-        PriceOrder = buyPrice; 
-        Buy(UserName, StockSymbol, PriceOrder, buyVolume, side); 
-        current_time = Long.toString(System.nanoTime());
-    	ID = UserName + StockSymbol + current_time;
+    private String userName;
+    private String stockSymbol;
+    private Tradable buyQuoteSide;
+    private Tradable sellQuoteSide;
+
+   
+    Quote(String userName, String productSymbol, Price buyPrice,
+            int buyVolume, Price sellPrice, int sellVolume)throws InvalidVolumeException{
+        this.userName = userName; 
+        stockSymbol = productSymbol;
+        buyQuoteSide = new QuoteSide(userName, productSymbol, buyPrice, buyVolume, Tradable.BookSide.BUY);
+        sellQuoteSide = new QuoteSide(userName, productSymbol, sellPrice, sellVolume, Tradable.BookSide.SELL);
     }
     
     public String getUserName(){
-        return UserName;
+        return userName;
     }
     
     public String getProduct(){
-        return StockSymbol;
+        return stockSymbol;
     }
     
-    public QuoteSide getQuoteSide(String sideIn){
-        side.setSide(sideIn);
-        return null;
+    public QuoteSide getQuoteSide(String sideIn) throws InvalidVolumeException{
+        if(sideIn.equals(BookSide.BUY)){
+            return (QuoteSide) buyQuoteSide;
+        }
+        else{
+            return (QuoteSide)sellQuoteSide;
+        }
     }
     
+    @Override
     public String toString(){
-        String sum_string;
-        sum_string = StockSymbol + "$" + PriceOrder + "( Original Vol: " + OriQuantity + ", CXL'd Vol: " + CanQuantity + "), ID: (" + ID + ")";
-        return sum_string;
+        return String.format("%s quote: %s - %s", userName, buyQuoteSide, sellQuoteSide);
     } 
 }

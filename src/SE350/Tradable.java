@@ -1,77 +1,35 @@
 
 package SE350;
 
+import SE350.GlobalConstants.BookSide;
+
 /**
  *
  * @author Daryl
  */
-public class Tradable {
-    Order TradableO = new Order();
-    //Price TradableP = new Price();
-    Bookside b_side = new Bookside();
+public interface Tradable {
     
-    String getProduct(){
-        return TradableO.product; 
-    }
+    public static enum BookSide{BUY, SELL};
     
-    long getPrice(){
-        return TradableO.Tradable.P; 
-    } //I used long instead of Price because of the long return method
+    public String getProduct();
     
-    int getOriginalVolume(){
-        return TradableO.OriQuantity;
-    }
+    public Price getPrice();
     
-    int getRemainingVolume(){
-        return TradableO.RemQuantity;
-    }
+    public int getOriginalVolume();
     
-    int getCancelledVolume(){
-        return TradableO.CanQuantity;
-    }
+    public int getRemainingVolume();
     
-    void setCancelledVolume(int newCancelledVolume){
-        int check; 
-        check = newCancelledVolume + TradableO.RemQuantity; 
-        
-        if (newCancelledVolume <0 || check < TradableO.OriQuantity)
-        {
-            System.out.println("Value is invalid");
-        }
-        else
-        {
-            TradableO.CanQuantity = newCancelledVolume; 
-        }
-    }
+    public int getCancelledVolume();
     
-    void setRemainingVolume(int newRemainingVolume){
-        int check;
-        check = newRemainingVolume + TradableO.CanQuantity; 
-        
-        if(newRemainingVolume < 0 || check < TradableO.OriQuantity){
-            System.out.println("Value is invalid");
-        }
-        else
-        {
-            TradableO.RemQuantity = newRemainingVolume;
-        }
-    }
+    public void setCancelledVolume(int newCancelledVolume) throws InvalidVolumeException;
     
-    String getUser(){
-        return TradableO.UserID; 
-    }
+    void setRemainingVolume(int newRemainingVolume) throws InvalidVolumeException;
+            
+    String getUser();
     
-    String getSide(){
-        return b_side.getSide();
-    }
+    BookSide getSide();
     
-    boolean isQuote(){
-        return TradableO.quote;
-        //not sure about this. check.
-    }
+    boolean isQuote();
     
-    String getId(){
-        return TradableO.ID; 
-    }
+    String getId();
 }
-

@@ -1,8 +1,6 @@
 
 package SE350;
 
-
-
 import java.util.ArrayList;
 
 // HERE you should add any imports for your classes that you need to make this class compile.
@@ -21,7 +19,7 @@ public class main {
     }
 
     
-    private static void testTradables() {
+    private static void testTradables() throws InvalidVolumeException {
 
         Tradable tradable1 = null;
         Quote quote1 = null;
@@ -370,5 +368,5 @@ Quote's toString: USER2 quote: GE $21.56 x 100 (Original Vol: 100, CXL'd Vol: 0)
 
 9) Attempt to create a quote using INVALID data (negative sell volume) - should throw an exception:
 Properly handled an invalid volume -- error message is: Invalid SELL-Side Volume: -50
-*
-/
+
+*/

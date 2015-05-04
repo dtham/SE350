@@ -2,155 +2,147 @@
 package SE350;
 
 
-public class Price{
+public class Price implements Comparable<Price>{
     
-    public long P; 
-    public boolean market_price = false; 
+    boolean market_price;
+    Price self = this; 
+    long value; 
     
-    public void Price(long value){
+    private final int BEFORE = -1;
+    private final int EQUAL = 0; 
+    private final int AFTER = 1; 
+    
+    Price(long value){
        //price check
-        if(value == 0 ) //check marketprice
-        {
-            System.out.println("Invalid Price Operation");
-        }
-        else
-        {
-            P = value;
-        }
+        self.value = value; 
+        self.market_price = false;
     }
     
-    public void Price(){
-        market_price = true; //check
-    }
-    
-    public class InvalidPriceOperation extends Exception{
-    	public InvalidPriceOperation(String message) {
-    		super(message);
-    	}
-    	public InvalidPriceOperation(String message, Throwable throwable){
-    		super(message, throwable);
-    }
+    //constructor
+    Price(){
+        self.value = 0; 
+        self.market_price = true; 
     }
            
-    public long add(Price p) throws InvalidPriceOperation{
-    	if(p == null || market_price == true || p.market_price==true) {
-            throw new InvalidPriceOperation("Price either null or market price!");
+    public Price add(Price p) throws InvalidPriceOperation{
+    	if(self.isMarket()) {
+            throw new InvalidPriceOperation("Current Price is a Market Price!");
     	}
-    	else{
-            long p_val = p.P + this.P;
-            return p_val;
-            }
-    }
-    
-    public long subtract(Price p) throws InvalidPriceOperation{
-    	if(p == null || market_price == true || p.market_price==true) {
-            throw new InvalidPriceOperation("Price either null or market price!");
+    	if(p.isMarket()) {
+            throw new InvalidPriceOperation("Price passed in is Market Price!");
         }
-    	else {
-            long p_val = this.P - p.P; 
-            return p_val;
-        }
-    }
-    
-    public long multiply(Price p)throws InvalidPriceOperation{
-    	if(p == null || market_price == true || p.market_price==true) {
-            throw new InvalidPriceOperation("Price either null or market price!");
-        }
-    	else {
-            long p_val = p.P * this.P;
-            return p_val;
-        }
-    }
-    
-    public int compareTo(Price p)throws InvalidPriceOperation{
-    	if(p == null || market_price == true || p.market_price==true) {
-        	throw new InvalidPriceOperation("Price either null or market price!");
-        }
-    	else{
-            int comp_result = 0;
-    	if (p.P == P) {
-    		comp_result = 0;
-    	}
-    	if (p.P > P){
-    		comp_result = -1;
-    	}
-    	if (p.P < P){
-    		comp_result = 1;
-    	}
-    		return comp_result;
         
+        return new Price(self.value + p.value);
     }
-    	}
-    public boolean greaterOrEqual(Price p)throws InvalidPriceOperation{
-    	if(p == null || market_price == true || p.market_price==true) {
-            throw new InvalidPriceOperation("Price either null or market price!");
+    
+    public Price subtract(Price p) throws InvalidPriceOperation{
+    	if(self.isMarket()){
+            throw new InvalidPriceOperation("Current Price is a Market Price!");
         }
-    	else{
-            boolean a = true;
-            boolean b = false;
-            if (compareTo(p) >= 0) { 
-                return a;
-            }
-    	return b;
+    	if(p.isMarket()){
+            throw new InvalidPriceOperation("Price passed in is Market Price");
+        }
+        
+        return new Price(self.value - p.value);
+    }
+    
+    public Price multiply(int p)throws InvalidPriceOperation{
+    	if(self.isMarket()){
+            throw new InvalidPriceOperation("Current Price is a Market Price");                  
+        }
+            return new Price(self.value * p);
+    }
+    
+    public int compareTo(Price p){ 
+    	if (self.value == p.value) {
+    		return self.EQUAL;
+    	}
+        if (self.value > p.value){
+    		return self.AFTER;
+    	}
+    	if (self.value < p.value){
+    		return self.BEFORE;
+    	}
+        else{
+            return self.EQUAL;
+        }
+    }
+    
+    public boolean greaterOrEqual(Price p){
+    	if(p.isMarket() || self.isMarket()){
+            return false;
+        }
+        
+        int comp = self.compareTo(p);
+        
+        if(comp == self.AFTER || comp == self.EQUAL){
+            return true;
+        }
+        else{
+            return false;
         }
     }
     
     
     public boolean greaterThan(Price p)throws InvalidPriceOperation{
-    	if(p == null || market_price == true || p.market_price==true) {
-        	throw new InvalidPriceOperation("Price either null or market price!");
+    	if(p.isMarket() || self.isMarket()){
+            return false;
         }
-    	else{
-            boolean a = true;
-            boolean b = false;
-            if (compareTo(p) > 0) { 
-            return a;
+        
+        int comp = self.compareTo(p);
+        
+        if(comp == self.AFTER){
+            return true;
         }
-            return b;
+        else{
+            return false;
         }
     }
 
     
     public boolean lessOrEqual(Price p){
-    	boolean a = true;
-    	boolean b = false;
-    	try{
-    	if (compareTo(p) <= 0) { 
-            return a;
+    	if(p.isMarket() || self.isMarket()){
+            return false;
         }
-    	}
-    	catch(InvalidPriceOperation i){
-    		System.out.print(i);
-    	}
-    	return b;
+        
+        int comp = self.compareTo(p);
+        
+        if(comp == self.EQUAL || comp == self.BEFORE){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
     
     public boolean lessThan(Price p){
-    	boolean a = true;
-    	boolean b = false;
-    	try{
-    	if (compareTo(p) < 0) { 
-    	return a;
+    	if(p.isMarket() || self.isMarket()){
+            return false;
         }
-    	}
-    	catch(InvalidPriceOperation x){
-    		System.out.print(x);
-    	}
-    	return b;
+        
+        int comp = self.compareTo(p);
+        
+        if(comp == self.BEFORE){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
    
     public boolean equals(Price p){
-    	boolean a = true;
-    	boolean b = false;
-    	try{
-            if (compareTo(p) == 0) { 
-            return a;
-            }
+    	if(p.isMarket() || self.isMarket()){
+            return false;
         }
-            catch(InvalidPriceOperation y){
-    		System.out.print(y);
-    	}
-    	return b;
+        
+        int comp = self.compareTo(p);
+        
+        if(comp == self.EQUAL){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
     
     public boolean isMarket() {
@@ -158,35 +150,15 @@ public class Price{
     }
     
     public boolean isNegative() {
-    	boolean a = true;
-    	boolean b = false;
-    	 if (market_price == true) {
-    		 return b;
-    	 }
-    	 else {
-    	if (P < 0) {
-    		return a;
-    	}
-    	return b;
-    	}
+        if(self.isMarket() || self.value >= 0){
+            return false;
+        }
+        else{
+            return true;
+        }
     }
     
     public String toString() {
-    	String pos_P = '$'+ Long.toString(P/10);
-    	String neg_P = '$' + '-' + Long.toString(P/10);
-    	
-        if (market_price == true) {
-    		return "MKT";
-    	}
-        else if (P<0) {
-    		return neg_P;	
-    	}
-        else{         //if (P>0) causes an error (replaced)
-    		return pos_P;
-    	}
-    }
-        
-    
-    
-    
-    }
+    	return (self.isMarket() ? "MKT" : String.format("$%,.2f", self.value/100.0));
+    }  
+}

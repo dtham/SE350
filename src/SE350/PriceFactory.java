@@ -1,29 +1,38 @@
 
 package SE350;
 
+import java.util.*;
 
 public class PriceFactory {
-    public static long limit;
-    public static Price Factory = new Price();
+    
+    private static Map<String, Price> flyweights = new HashMap<>();
+    
     
     public static Price makeLimitPrice(String value){
-        value = value.replaceAll("[$,]","");
-        double temp = Double.parseDouble(value);
-        temp = temp*100.0; 
-        limit = (long)temp;
-        return null;
+       String parsedStringValue = value.replaceAll("[$,]", "");
+       long temp = Long.parseLong(parsedStringValue);
+       return PriceFactory.makeLimitPrice(temp);
     }
     
     public static Price makeLimitPrice(long value){
-        //not sure if we need to convert this value into Dollars
-        value = value*100;
-        Factory.Price(value);
-        return null; 
+        String temp = value + ""; 
+        
+        Price p = PriceFactory.flyweights.get(temp);
+        if(p == null){
+            p = new Price(value);
+            PriceFactory.flyweights.put(temp, p);
+        }
+            return p;  
     }
     
+    
     public static Price makeMarketPrice(){
-        Factory.Price();
-        return null; 
+        Price p = PriceFactory.flyweights.get("MKT");
+        if(p == null){
+            p = new Price();
+            PriceFactory.flyweights.put("MKT", p);
+        }
+            return p;
     }
     
     
