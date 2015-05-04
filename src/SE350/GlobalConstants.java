@@ -10,5 +10,5 @@ package SE350;
  * @author Daryl's
  */
 public class GlobalConstants {
-    public static enum BookSide {BUY, SELL}
+    public static enum BookSide {BUY, SELL};
 }

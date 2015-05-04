@@ -6,10 +6,17 @@ public class Order implements Tradable{
     
     private Tradable order;
     
-    public Order(String userName, String productSymbols, Price orderPrice, int originalVolume, Tradable.BookSide side)
+    public Order(String userName, String productSymbols, Price orderPrice, int originalVolume, String side)
                 throws InvalidVolumeException{
+        Tradable.BookSide tempside;
+        if(side == "BUY"){
+            tempside = Tradable.BookSide.BUY;
+        }
+        else if (side == "SELL"){
+            tempside = Tradable.BookSide.SELL;
+        }
         order = new TradableImpl(userName, productSymbols, orderPrice, originalVolume,
-                false, side, userName + productSymbols + orderPrice + System.nanoTime());
+                false, tempside, userName + productSymbols + orderPrice + System.nanoTime());
     }
     
     @Override
