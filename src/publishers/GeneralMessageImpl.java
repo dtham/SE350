@@ -3,16 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package constants;
+package publishers;
 
 /**
  *
- * @author Daryl's
+ * @author Daryl
  */
-public class GlobalConstants {
-    public static enum BookSide {BUY, SELL};
+public class GeneralMessageImpl {
     
-    public static enum MarketState {CLOSED, OPEN, PREOPEN};
 }
-
-

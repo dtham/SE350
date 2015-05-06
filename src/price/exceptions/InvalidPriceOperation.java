@@ -1,4 +1,4 @@
-package SE350;
+package price.exceptions;
 
 public class InvalidPriceOperation extends Exception {
   

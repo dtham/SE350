@@ -3,16 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package constants;
+package publishers.exceptions;
 
 /**
  *
- * @author Daryl's
+ * @author Daryl
  */
-public class GlobalConstants {
-    public static enum BookSide {BUY, SELL};
+public class InvalidPublisherOperation extends Exception{
     
-    public static enum MarketState {CLOSED, OPEN, PREOPEN};
+    public InvalidPublisherOperation(String msg){
+        super(msg);
+    }
 }
-
-

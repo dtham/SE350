@@ -1,6 +1,6 @@
 
 package price;
-import SE350.InvalidPriceOperation;
+import price.exceptions.InvalidPriceOperation;
 
 
 public class Price implements Comparable<Price>{
