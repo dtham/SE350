@@ -10,7 +10,9 @@ public class PriceFactory {
     
     public static Price makeLimitPrice(String value){
        String parsedStringValue = value.replaceAll("[$,]", "");
-       long temp = Long.parseLong(parsedStringValue);
+       double dTemp = Double.parseDouble( parsedStringValue );
+       dTemp *= 100;
+       long temp = (long)dTemp;
        return PriceFactory.makeLimitPrice(temp);
     }
     

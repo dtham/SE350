@@ -12,12 +12,12 @@ public class TradableDTO {
     public int remainingVolume;
     public int cancelledVolume;
     public String user;
-    public BookSide side;
+    public Tradable.BookSide side;
     public boolean isQuote;
     public String id;
     
     public TradableDTO(String theProduct, Price thePrice, int theOriginalVolume,
-            int theRemainingVolume, int theCancelledVolume, String theUser, BookSide theSide, 
+            int theRemainingVolume, int theCancelledVolume, String theUser, Tradable.BookSide theSide, 
             boolean ifIsQuote, String theId){
         product = theProduct;
         price = thePrice; 

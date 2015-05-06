@@ -8,7 +8,7 @@ public class Order implements Tradable{
     
     public Order(String userName, String productSymbols, Price orderPrice, int originalVolume, String side)
                 throws InvalidVolumeException{
-        Tradable.BookSide tempside;
+        Tradable.BookSide tempside = null;
         if(side == "BUY"){
             tempside = Tradable.BookSide.BUY;
         }

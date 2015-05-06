@@ -2,7 +2,7 @@
 package SE350;
 
 import java.util.ArrayList;
-
+import SE350.TradableDTO;
 // HERE you should add any imports for your classes that you need to make this class compile.
 // You will need imports for Price, PriceFactory, InvalidPriceOperation, Order, Quote, Tradable and TradableDTO;
 
@@ -15,9 +15,13 @@ public class main {
     public static void main(String[] args) {
 
         testPrices();
-        testTradables();
+        try {
+			testTradables();
+		} catch (InvalidVolumeException e) {
+			e.printStackTrace();
+		}
     }
-
+ 
     
     private static void testTradables() throws InvalidVolumeException {
 
@@ -108,7 +112,11 @@ public class main {
         verifyTestPriceValues();
         verifyMathematicalOperations();
         verifyBooleanChecks();
-        verifyComparisons();
+        try {
+			verifyComparisons();
+		} catch (InvalidPriceOperation e) {
+			e.printStackTrace();
+		}
         verifyFlyweight();
 
         System.out.println("\nPrice Tests Complete\n\n");
@@ -116,7 +124,7 @@ public class main {
 
     private static void makeSomeTestPriceObjects() {
         System.out.println("1) Creating some Test Price Objects: ");
-        testPriceHolder.add(PriceFactory.makeLimitPrice("10.50"));
+        testPriceHolder.add(PriceFactory.makeLimitPrice("$10.50"));
         testPriceHolder.add(PriceFactory.makeLimitPrice("$1400.99"));
         testPriceHolder.add(PriceFactory.makeLimitPrice("$-51.52"));
         testPriceHolder.add(PriceFactory.makeLimitPrice(".49"));
@@ -221,7 +229,7 @@ public class main {
         System.out.println();
     }
 
-    private static void verifyComparisons() {
+    private static void verifyComparisons() throws InvalidPriceOperation {
         System.out.println("5) Verifying the Functionality of your Boolean Comparisons:");
         Price testPrice = testPriceHolder.get(7);
 
