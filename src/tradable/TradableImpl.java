@@ -2,7 +2,7 @@
 package tradable;
 import price.Price;
 import SE350.InvalidVolumeException;
-import SE350.GlobalConstants.BookSide;
+import constants.GlobalConstants.BookSide;
 
 
 

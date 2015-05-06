@@ -1,7 +1,8 @@
 
-package SE350;
-
-import SE350.GlobalConstants.BookSide;
+package tradable;
+import SE350.InvalidVolumeException;
+import price.Price;
+import constants.GlobalConstants.BookSide;
 
 
 
@@ -15,7 +16,7 @@ public class Quote {
     private Tradable sellQuoteSide;
 
    
-    Quote(String userName, String productSymbol, Price buyPrice,
+    public Quote(String userName, String productSymbol, Price buyPrice,
             int buyVolume, Price sellPrice, int sellVolume)throws InvalidVolumeException{
         this.userName = userName; 
         stockSymbol = productSymbol;

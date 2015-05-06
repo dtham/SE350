@@ -1,4 +1,4 @@
-package SE350;
+package publishers;
 
 public class MarketMessage {
 	String state;

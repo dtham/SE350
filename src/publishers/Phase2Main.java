@@ -1,4 +1,4 @@
-package SE350;
+package publishers;
 
 // HERE you should add any imports for your classes that you need to make this class compile.
 

@@ -1,5 +1,7 @@
 
-package SE350;
+package tradable;
+import price.Price;
+import SE350.InvalidVolumeException;
 
 
 public class Order implements Tradable{

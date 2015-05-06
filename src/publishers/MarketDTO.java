@@ -1,4 +1,4 @@
-package SE350;
+package publishers;
 
 public class MarketDTO {
 	public String product;
