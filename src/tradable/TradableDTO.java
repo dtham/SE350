@@ -1,6 +1,6 @@
 
-package SE350;
-
+package tradable;
+import price.Price;
 import SE350.GlobalConstants.BookSide;
 import java.util.Locale;
 

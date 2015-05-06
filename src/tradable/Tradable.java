@@ -1,6 +1,6 @@
 
 package tradable;
-package constants;
+import price.Price;
 
 /**
  *
