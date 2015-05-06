@@ -1,7 +1,6 @@
 
-package SE350;
-
-import SE350.GlobalConstants.BookSide;
+package tradable;
+package constants;
 
 
 public class QuoteSide implements Tradable{

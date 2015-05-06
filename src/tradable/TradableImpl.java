@@ -1,5 +1,5 @@
 
-package SE350;
+package tradable;
 
 import SE350.GlobalConstants.BookSide;
 

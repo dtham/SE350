@@ -1,5 +1,5 @@
 
-package SE350;
+package price;
 
 import java.util.*;
 
