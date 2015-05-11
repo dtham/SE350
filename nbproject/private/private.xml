@@ -2,6 +2,11 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/driver/main.java</file>
+            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/GeneralMarketMessage.java</file>
+            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/GeneralMarketMessageImpl.java</file>
+            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/GeneralMessageImpl.java</file>
+        </group>
     </open-files>
 </project-private>
