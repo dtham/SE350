@@ -1,4 +1,6 @@
-package publishers;
+package publishers.message;
+
+import price.Price;
 
 public interface User {
 

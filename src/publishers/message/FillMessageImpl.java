@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
+package publishers.message;
 import constants.GlobalConstants.BookSide;
 import price.Price;
-import publishers.exceptions.InvalidMessageException;
+import publishers.message.exceptions.InvalidMessageException;
 
-package publishers;
+
 
 /**
  *
@@ -25,32 +25,37 @@ public class FillMessageImpl implements GeneralMarketMessage {
     
     @Override
     public String getUser() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return gm.getUser();
     }
 
     @Override
     public String getProduct() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return gm.getProduct();
     }
 
     @Override
     public Price getPrice() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return gm.getPrice();
     }
 
     @Override
     public int getVolume() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return gm.getVolume();
     }
 
     @Override
     public String getDetails() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return gm.getDetails();
     }
 
     @Override
     public BookSide getSide() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return gm.getSide();
     }
     
+    @Override
+    public String toString(){
+        String str = gm.toString();
+        return str.substring(0, str.indexOf("ID") -2);
+    }
 }

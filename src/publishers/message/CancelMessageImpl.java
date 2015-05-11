@@ -3,11 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+package publishers.message;
 import publishers.exceptions.InvalidMessageException;
 import price.Price;
 import constants.GlobalConstants.BookSide;
 
-package publishers;
+
 
 /**
  *

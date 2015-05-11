@@ -1,4 +1,5 @@
-package publishers;
+package publishers.message;
+import price.Price;
 
 public class MarketDTO {
 	public String product;

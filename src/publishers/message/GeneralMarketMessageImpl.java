@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
+package publishers.message;
 import constants.GlobalConstants;
 import price.Price;
-import publishers.exceptions.InvalidMessageException;
-package publishers;
+import publishers.message.exceptions.InvalidMessageException;
+
 import constants.GlobalConstants.BookSide;
 
 /**
@@ -65,6 +65,13 @@ public class GeneralMarketMessageImpl implements GeneralMarketMessage{
         return side;
     }
     
+    @Override
+    public String toString() {
+        return ("User: " + user + ", Product: " + product + ", Price: " + price +
+            ", Volume: " + volume + ", Details: " + details + ", Side: " +
+            side + ", ID: " + id);
+    }
+    
     private void setUser(String user) throws InvalidMessageException {
     if (user == null || user.isEmpty()) {
       throw new InvalidMessageException("User cannot be null or empty.");
@@ -98,26 +105,19 @@ public class GeneralMarketMessageImpl implements GeneralMarketMessage{
       throw new InvalidMessageException("Details cannot be null or empty");
     }
     this.details = details;
-  }
+    }
 
   private void setSide(BookSide side) throws InvalidMessageException {
     if (!(side instanceof BookSide)) {
       throw new InvalidMessageException("Side must be a valid Book Side");
     }
     this.side = side;
-  }
+    }
 
   private void setId(String id) throws InvalidMessageException {
     if (id == null || id.isEmpty()) {
       throw new InvalidMessageException("ID cannot be null or empty.");
     }
     this.id = id;
-   
-  @Override
-  public String toString() {
-    return ("User: " + user + ", Product: " + product + ", Price: " + price +
-            ", Volume: " + volume + ", Details: " + details + ", Side: " +
-            side + ", ID: " + id);
-  }
+    }
 }
-

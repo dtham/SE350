@@ -1,4 +1,4 @@
-package publishers;
+package publishers.message;
 
 import price.Price;
 import price.exceptions.InvalidPriceOperation;
@@ -64,7 +64,7 @@ public class CancelMessage implements GeneralMarketMessage, Comparable<CancelMes
 
 	public int compareTo(CancelMessage cm)
 	{
-		return cancelMessageImpl.getPrice().copareTo(cm.getPrice());
+		return cancelMessageImpl.getPrice().compareTo(cm.getPrice());
 	}
 	
 

@@ -1,25 +1,20 @@
-package publishers;
+package publishers.message;
 
-public class MarketMessage {
-	String state;
-	
-	MarketMessage( String state) throws InvalidInputOperation {
-		setState(state);
-	}
-	
-	public String getState() {
-		return state;
-	}
+import constants.GlobalConstants.MarketState;
+import publishers.message.exceptions.InvalidMessageException;
 
-	public void setState(String state) throws InvalidInputOperation{
-		if (state == "OPEN" || state == "CLOSED" || state == "PREOPEN" ) {
-		this.state = state;
-	}
-		else{
-			throw new InvalidInputOperation("Invalid Market State!");
-		}
-	}
+public class MarketMessage implements StateOfMarket{
+    
+    private StateOfMarket marketMessageImpl;
+    
+    public MarketMessage(MarketState state) throws InvalidMessageException{
+        marketMessageImpl = MessageFactory.createMarketMessageImpl(state);
+    }
+    
+    @Override
+    public MarketState getState() {
+        return marketMessageImpl.getState();
+    }
 	
 	
-
 }
