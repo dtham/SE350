@@ -6,7 +6,7 @@
 package publishers.message;
 import constants.GlobalConstants.BookSide;
 import price.Price;
-import publishers.exceptions.InvalidMessageException;
+import publishers.message.exceptions.InvalidMessageException;
 
 
 /**

@@ -1,80 +1,73 @@
 package publishers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import price.Price;
-import price.PriceFactory;
-import price.exceptions.InvalidPriceOperation;
-import publishers.exceptions.AlreadySubscribedException;
-import publishers.exceptions.InvalidPublisherOperation;
-import publishers.exceptions.NotSubscribedException;
+
 import client.User;
+import price.Price;
+import publishers.exceptions.PublisherExceptions;
+import publishers.message.CancelMessage;
+import publishers.message.FillMessage;
+import publishers.message.MarketDataDTO;
+import publishers.message.MarketMessage;
 
 
-public class TickerPublisher implements Publisher 
+public class TickerPublisher implements MessagePublisherSubject 
 {
-	private SubscriptionHandler subscriptionHandler;
-	private HashMap<String, ArrayList<User>> subscriptions = new HashMap<String, ArrayList<User>>();
-	private HashMap<String, Price> lastTicker = new HashMap<String, Price>();
-	private static TickerPublisher TickerPublisherInstance = null;
-	private TickerPublisher() throws InvalidPublisherOperation { subscriptionHandler = SubscriptionHandlerFactory.makeSubscriptionHandler(new SubscriptionHandler()); };
-	
-	
-	public static TickerPublisher getInstance() throws InvalidPublisherOperation
-	{
-		if (TickerPublisherInstance == null)
-		{
-			TickerPublisherInstance = new TickerPublisher();
-		}
-		return TickerPublisherInstance;
-	}
-	
-	
-	public synchronized void publishTicker(String product, Price p) throws InvalidPriceOperation
-	{
-		char direction = ' ';
-		if (lastTicker.containsKey(product))
-		{
-			if (p.greaterThan(lastTicker.get(product)))
-			{
-				direction = '↑';
-			}
-			else if (p.lessThan(lastTicker.get(product)))
-			{
-				direction = '↓';
-			}
-			else 
-			{
-				direction = '=';
-			}
-		}
-		else
-		{
-			lastTicker.put(product, p);
-			
-		}
-		if (p == null)
-		{
-			p = PriceFactory.makeLimitPrice(0);
-		}
-		if (subscriptions.get(product) != null)
-		{
-			for (User u : subscriptions.get(product))
-			{
-				u.acceptTicker(product, p, direction);			
-			}
-		}
-	}
-	
-	
-	public synchronized void subscribe(User u, String product) throws AlreadySubscribedException
-	{
-		subscriptions.put(product, subscriptionHandler.subscribe(u, product, subscriptions.get(product)));
-	}
-	
+    private volatile static TickerPublisher instance;
+    private MessagePublisherSubject messagePublisherSubjectImpl;
 
-	public synchronized void unSubscribe(User u, String product) throws NotSubscribedException
-	{
-		subscriptions.put(product, subscriptionHandler.unSubscribe(u, product, subscriptions.get(product)));
-	}
+    public static TickerPublisher getInstance() {
+       if (instance == null) {
+         synchronized (TickerPublisher.class) {
+           if (instance == null) {
+             instance = MessagePublisherSubjectFactory.createTickerPublisher();
+           }
+         }
+       }
+       return instance;
+     }
+    
+    protected TickerPublisher(MessagePublisherSubject impl) {
+        messagePublisherSubjectImpl = impl;
+    }
+     
+    @Override
+    public void subscribe(User u, String product) throws PublisherExceptions {
+         messagePublisherSubjectImpl.subscribe(u, product);
+    }
+
+    @Override
+    public void unSubscribe(User u, String product) throws PublisherExceptions {
+         messagePublisherSubjectImpl.unSubscribe(u, product);
+    }
+
+    @Override
+    public void publishCurrentMarket(MarketDataDTO m) {
+        
+    }
+
+    @Override
+    public void publishLastSale(String product, Price p, int v) {
+        
+    }
+
+    @Override
+    public void publishTicker(String product, Price p) {
+        messagePublisherSubjectImpl.publishTicker(product, p);
+    }
+
+    @Override
+    public void publishCancel(CancelMessage cm) {
+        
+    }
+
+    @Override
+    public void publishFill(FillMessage fm) {
+        
+    }
+
+    @Override
+    public void publishMarketMessage(MarketMessage mm) {
+        
+    }
+	
 }

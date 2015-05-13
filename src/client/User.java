@@ -1,6 +1,8 @@
-package publishers.message;
+package client;
 
 import price.Price;
+import publishers.message.CancelMessage;
+import publishers.message.FillMessage;
 
 public interface User {
 

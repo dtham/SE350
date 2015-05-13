@@ -1,394 +1,334 @@
-
 package driver;
-import SE350.InvalidInputOperation;
-import price.exceptions.InvalidPriceOperation;
-import SE350.InvalidVolumeException;
+
+import client.User;
+import constants.GlobalConstants;
 import constants.GlobalConstants.BookSide;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import price.Price;
 import price.PriceFactory;
+import price.exceptions.InvalidPriceOperation;
+import publishers.CurrentMarketPublisher;
+import publishers.LastSalePublisher;
+import publishers.MessagePublisher;
+import publishers.TickerPublisher;
+import publishers.message.CancelMessage;
+import publishers.message.CancelMessageImpl;
+import publishers.message.FillMessage;
+import publishers.message.FillMessageImpl;
+import publishers.message.GeneralMarketMessage;
+import publishers.message.MarketDataDTO;
+import publishers.message.MarketMessage;
+import publishers.message.MarketMessageImpl;
+import publishers.message.StateOfMarket;
 import tradable.Order;
 import tradable.Quote;
-import tradable.QuoteSide;
 import tradable.Tradable;
 import tradable.TradableDTO;
-import tradable.TradableImpl;
-
-
-
-import java.util.ArrayList;
-
-// HERE you should add any imports for your classes that you need to make this class compile.
-// You will need imports for Price, PriceFactory, InvalidPriceOperation, Order, Quote, Tradable and TradableDTO;
-
 
 
 public class main {
 
-    private static final ArrayList<Price> testPriceHolder = new ArrayList<>();
+    private static User u1, u2, u3, u4;
 
     public static void main(String[] args) {
 
-        testPrices();
-        try {
-			testTradables();
-		} catch (InvalidVolumeException e) {
-			e.printStackTrace();
-		}
+        performLegacyTests();
+
+        makeTestUsers();
+        testCurrentMarketPublisher();
+        testTickerPublisher();
+        testLastSalePublisher();
+        testMessagePublisher();
+
     }
- 
+
+    private static void performLegacyTests() {
+
+        Price p1 = PriceFactory.makeLimitPrice("15.00");
+        Price p2 = PriceFactory.makeLimitPrice("$15.00");
+        Price p3 = PriceFactory.makeLimitPrice("15");
+
+        // Insure Flyweight functionality
+        System.out.println("1) The Strings '15.00 and '$15.00' and '15' should all result in the same Price object holding a long of 1500");
+        boolean r = p1 == p2;
+        System.out.println("   Is 'p1'(15.00) the same Price object as 'p2' ($15.00): " + r + " (" + (r ? "CORRECT" : "ERROR") + ")");
+        r = p1 == p3;
+        System.out.println("   Is 'p1'(15.00) the same Price object as 'p3' (15): " + r + " (" + (r ? "CORRECT" : "ERROR") + ")");
+        r = p2 == p3;
+        System.out.println("   Is 'p2'($15.00) the same Price object as 'p3' (15): " + r + " (" + (r ? "CORRECT" : "ERROR") + ")");
+
+        r = p1 == p1;
+        System.out.println("   Is 'p1'(15.00) the same Price object as 'p1' (15.00): " + r + " (" + (r ? "CORRECT" : "ERROR") + ")");
+        r = p2 == p2;
+        System.out.println("   Is 'p2'($15.00) the same Price object as 'p2' ($15.00): " + r + " (" + (r ? "CORRECT" : "ERROR") + ")");
+        r = p3 == p3;
+        System.out.println("   Is 'p3'(15) the same Price object as 'p3' (15): " + r + " (" + (r ? "CORRECT" : "ERROR") + ")");
+
+        System.out.println("   Done with legacy tests\n");
+    }
+
+    private static void makeTestUsers() {
+        u1 = new UserImpl("REX");
+        u2 = new UserImpl("ANN");
+        u3 = new UserImpl("OWL");
+        u4 = new UserImpl("BEN");
+    }
     
-    private static void testTradables() throws InvalidVolumeException {
-
-        Tradable tradable1 = null;
-        Quote quote1 = null;
-
-        System.out.println("1) Create and print the content of a valid Order using Tradable reference:");
+    private static void testCurrentMarketPublisher() {
         try {
-            tradable1 = new Order("USER1", "GE", PriceFactory.makeLimitPrice("$21.59"), 250, "BUY");
-            System.out.println("Tradable's toString: " + tradable1 + "\n");
-        } catch (Exception e) {
-            System.out.println("An unexpected exception occurred: " + e.getMessage());
-            e.printStackTrace();
+            CurrentMarketPublisher.getInstance().subscribe(u1, "SBUX");
+            CurrentMarketPublisher.getInstance().subscribe(u2, "IBM");
+            CurrentMarketPublisher.getInstance().subscribe(u3, "AAPL");
+
+            System.out.println("2) Publish Current Market for SBUX. Only user REX is subscribed, only REX gets a message:");
+            MarketDataDTO mdo = new MarketDataDTO("SBUX", PriceFactory.makeLimitPrice("51.00"), 120, PriceFactory.makeLimitPrice("51.06"), 75);
+            CurrentMarketPublisher.getInstance().publishCurrentMarket(mdo);
+            System.out.println();
+
+            System.out.println("3) Publish Current Market for IBM. Only user ANN is subscribed, only ANN gets a message:");
+            MarketDataDTO mdo2 = new MarketDataDTO("IBM", PriceFactory.makeLimitPrice("205.85"), 300, PriceFactory.makeLimitPrice("205.98"), 220);
+            CurrentMarketPublisher.getInstance().publishCurrentMarket(mdo2);
+            System.out.println();
+
+            System.out.println("4) Publish Current Market for GE. No user is subscribed, no user gets a message:");
+            MarketDataDTO mdo3 = new MarketDataDTO("GE", PriceFactory.makeLimitPrice("22.70"), 40, PriceFactory.makeLimitPrice("22.78"), 110);
+            CurrentMarketPublisher.getInstance().publishCurrentMarket(mdo3);
+            System.out.println();
+
+            CurrentMarketPublisher.getInstance().subscribe(u2, "SBUX");
+            CurrentMarketPublisher.getInstance().subscribe(u3, "SBUX");
+            CurrentMarketPublisher.getInstance().subscribe(u4, "SBUX");
+
+            System.out.println("5) Publish Current Market for SBUX. Now all 4 users are subscribed so REX, ANN, OWL & BEN get a message");
+            MarketDataDTO mdo4 = new MarketDataDTO("SBUX", PriceFactory.makeLimitPrice("51.04"), 225, PriceFactory.makeLimitPrice("51.12"), 117);
+            CurrentMarketPublisher.getInstance().publishCurrentMarket(mdo4);
+            System.out.println();
+
+            CurrentMarketPublisher.getInstance().unSubscribe(u1, "SBUX");
+            CurrentMarketPublisher.getInstance().unSubscribe(u2, "SBUX");
+            CurrentMarketPublisher.getInstance().unSubscribe(u3, "SBUX");
+            CurrentMarketPublisher.getInstance().unSubscribe(u4, "SBUX");
+
+            System.out.println("6) Publish Current Market for SBUX. Now all 4 users are unsubscribed so no one get a message");
+            MarketDataDTO mdo5 = new MarketDataDTO("SBUX", PriceFactory.makeLimitPrice("51.10"), 110, PriceFactory.makeLimitPrice("51.13"), 120);
+            CurrentMarketPublisher.getInstance().publishCurrentMarket(mdo5);
+            System.out.println("Done with Current Market tests\n");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+    }
 
-        System.out.println("2) Create and print the content of a TradableDTO:");
-        TradableDTO tDTO = new TradableDTO(tradable1.getProduct(), tradable1.getPrice(), tradable1.getOriginalVolume(), tradable1.getRemainingVolume(),
-                tradable1.getCancelledVolume(), tradable1.getUser(), tradable1.getSide(), tradable1.isQuote(), tradable1.getId());
-        System.out.println("TradableDTO's toString: " + tDTO + "\n");
-
-        
-        System.out.println("3) Attempt to create an order using INVALID data (Zero volume) - should throw an exception:");
+    private static void testTickerPublisher() {
         try {
-            Order order = new Order("USER1", "GE", PriceFactory.makeLimitPrice("$21.59"), 0, "BUY");
-            System.out.println("*** If this prints then you have accepted invalid data in your Order - ERROR!\n\t" + order);
-        } catch (Exception e) { // Catch anything you throw.
-            // This block SHOULD execute.
-            System.out.println("Properly handled an invalid volume -- error message is:\n\t" + e.getMessage() + "\n");
+            TickerPublisher.getInstance().subscribe(u1, "SBUX");
+            TickerPublisher.getInstance().subscribe(u2, "IBM");
+
+            System.out.println("7) Publish Ticker for SBUX. Only user REX is subscribed, only REX gets a message (no arrows on message):");
+            TickerPublisher.getInstance().publishTicker("SBUX", PriceFactory.makeLimitPrice("52.00"));
+            System.out.println();
+
+            System.out.println("8) Publish Ticker for IBM. Only user ANN is subscribed, only ANN gets a message (no arrows on message):");
+            TickerPublisher.getInstance().publishTicker("IBM", PriceFactory.makeLimitPrice("204.85"));
+            System.out.println();
+            TickerPublisher.getInstance().unSubscribe(u1, "SBUX");
+            TickerPublisher.getInstance().unSubscribe(u2, "IBM");
+
+            System.out.println("9) Publish Ticker for GE. No user is subscribed, no user gets a message:");
+            TickerPublisher.getInstance().publishTicker("GE", PriceFactory.makeLimitPrice("22.70"));
+            System.out.println();
+
+            TickerPublisher.getInstance().subscribe(u1, "SBUX");
+            TickerPublisher.getInstance().subscribe(u2, "SBUX");
+            TickerPublisher.getInstance().subscribe(u3, "SBUX");
+            TickerPublisher.getInstance().subscribe(u4, "SBUX");
+
+            System.out.println("10) Publish Ticker for SBUX. Now all 4 users are subscribed so REX, ANN, OWL & BEN get a message (UP arrows on message):");
+            TickerPublisher.getInstance().publishTicker("SBUX", PriceFactory.makeLimitPrice("52.10"));
+            System.out.println();
+
+            System.out.println("11) Publish Ticker for SBUX. Now all 4 users are subscribed so REX, ANN, OWL & BEN get a message (DOWN arrows on message):");
+            TickerPublisher.getInstance().publishTicker("SBUX", PriceFactory.makeLimitPrice("51.90"));
+            System.out.println(); 
+            
+            System.out.println("12) Publish Ticker for SBUX. Now all 4 users are subscribed so REX, ANN, OWL & BEN get a message (EQUALS sign on message):");
+            TickerPublisher.getInstance().publishTicker("SBUX", PriceFactory.makeLimitPrice("51.90"));
+            System.out.println();
+            
+            TickerPublisher.getInstance().unSubscribe(u1, "SBUX");
+            TickerPublisher.getInstance().unSubscribe(u2, "SBUX");
+            TickerPublisher.getInstance().unSubscribe(u3, "SBUX");
+            TickerPublisher.getInstance().unSubscribe(u4, "SBUX");
+
+            System.out.println("13) Publish Ticker for SBUX. Now all 4 users are unsubscribed so no one get a message");
+            TickerPublisher.getInstance().publishTicker("SBUX", PriceFactory.makeLimitPrice("52.12"));
+            System.out.println("Done with Ticker tests\n");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+    }
 
-        
-        System.out.println("4) Change the cancelled and remaining volume of the order and display resulting tradable:");
+    private static void testLastSalePublisher() {
         try {
-            tradable1.setRemainingVolume(10);
-            tradable1.setCancelledVolume(25);
-            System.out.println("Tradable's toString: " + tradable1 + "\n");
-        } catch (Exception e) {
-            System.out.println("An unexpected exception occurred: " + e.getMessage());
-            e.printStackTrace();
+            LastSalePublisher.getInstance().subscribe(u1, "SBUX");
+            LastSalePublisher.getInstance().subscribe(u2, "IBM");
+            TickerPublisher.getInstance().subscribe(u1, "SBUX");
+            TickerPublisher.getInstance().subscribe(u2, "IBM");
+            
+            System.out.println("14) Publish Last Sale for SBUX. Only user REX is subscribed, only REX gets a message (Last Sale & Ticker with DOWN arrow):");
+            LastSalePublisher.getInstance().publishLastSale("SBUX", PriceFactory.makeLimitPrice("51.00"), 120);
+            System.out.println();
+
+            System.out.println("15) Publish Last Sale for IBM. Only user ANN is subscribed, only ANN gets a message (Last Sale & Ticker with UP arrow):");
+            LastSalePublisher.getInstance().publishLastSale("IBM", PriceFactory.makeLimitPrice("205.85"), 300);
+            System.out.println();
+
+            System.out.println("16) Publish Last Sale for GE. No user is subscribed, no user gets a message:");
+            LastSalePublisher.getInstance().publishLastSale("GE", PriceFactory.makeLimitPrice("22.70"), 40);
+            System.out.println();
+
+            LastSalePublisher.getInstance().subscribe(u2, "SBUX");
+            LastSalePublisher.getInstance().subscribe(u3, "SBUX");
+            LastSalePublisher.getInstance().subscribe(u4, "SBUX");
+            TickerPublisher.getInstance().subscribe(u2, "SBUX");
+            TickerPublisher.getInstance().subscribe(u3, "SBUX");
+            TickerPublisher.getInstance().subscribe(u4, "SBUX");
+            
+            System.out.println("17) Publish Last Sale for SBUX. Now all 4 users are subscribed so REX, ANN, OWL & BEN get a message (Last Sale & Ticker with EQUALS sign):");
+            LastSalePublisher.getInstance().publishLastSale("SBUX", PriceFactory.makeLimitPrice("51.00"), 120);
+            System.out.println();
+
+            LastSalePublisher.getInstance().unSubscribe(u1, "SBUX");
+            LastSalePublisher.getInstance().unSubscribe(u2, "SBUX");
+            LastSalePublisher.getInstance().unSubscribe(u3, "SBUX");
+            LastSalePublisher.getInstance().unSubscribe(u4, "SBUX");
+            TickerPublisher.getInstance().unSubscribe(u1, "SBUX");
+            TickerPublisher.getInstance().unSubscribe(u2, "SBUX");
+            TickerPublisher.getInstance().unSubscribe(u3, "SBUX");
+            TickerPublisher.getInstance().unSubscribe(u4, "SBUX");
+            
+            System.out.println("18) Publish Last Sale for SBUX. Now all 4 users are unsubscribed so no one get a message");
+            LastSalePublisher.getInstance().publishLastSale("SBUX", PriceFactory.makeLimitPrice("51.00"), 120);
+            System.out.println("Done with Last Sale tests\n");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        
-        
-        try {
-            System.out.println("5) Change the Cancelled Volume of the order to greater than original volume - should throw an exception:");
-            tradable1.setCancelledVolume(300);
-        } catch (Exception e) { // Catch anything you throw.
-            // This block SHOULD execute.
-            System.out.println("Properly handled an invalid cancelled volume -- error message is:\n\t" + e.getMessage() + "\n");
-        }
+    }
 
-        
-        try {
-            System.out.println("6) Change the Remaining Volume of the order to greater than original volume - should throw an exception:");
-            tradable1.setRemainingVolume(300);
-        } catch (Exception e) { // Catch anything you throw.
-            // This block SHOULD execute.
-            System.out.println("Properly handled an invalid remaining volume -- error message is: \n\t" + e.getMessage() + "\n");
-        }
+    private static void testMessagePublisher() {
 
-        
-        System.out.println("7) Create and print the content of a valid Quote:");
         try {
-            quote1 = new Quote("USER2", "GE", PriceFactory.makeLimitPrice("$21.56"), 100, PriceFactory.makeLimitPrice("$21.62"), 100);
-            System.out.println("Quote's toString: " + quote1 + "\n");
-        } catch (Exception e) {
-            System.out.println("An unexpected exception occurred: " + e.getMessage());
-            e.printStackTrace();
-        }
+            MessagePublisher.getInstance().subscribe(u1, "SBUX");
+            MessagePublisher.getInstance().subscribe(u2, "SBUX");
 
-        
-        System.out.println("8) Display the individual Quote Sides of the new Quote object:");
-        System.out.println("\tQuoteSide's toString: " + quote1.getQuoteSide("BUY"));
-        System.out.println("\tQuoteSide's toString: " + quote1.getQuoteSide("SELL") + "\n");
+            System.out.println("19) Send a CancelMessage to REX. REX is subscribed for SBUX messages so REX gets the message.");
+            CancelMessage cm = new CancelMessage("REX", "SBUX", PriceFactory.makeLimitPrice("52.00"), 140, "Cancelled By User", BookSide.BUY, "ABC123XYZ");
+            MessagePublisher.getInstance().publishCancel(cm);
+            System.out.println();
+            
+            System.out.println("20) Send a CancelMessage to REX. REX is NOT subscribed for IBM messages so REX does not get the message.");
+            CancelMessage cm2 = new CancelMessage("REX", "IBM", PriceFactory.makeLimitPrice("52.00"), 140, "Cancelled By User", BookSide.BUY, "ABC123XYZ");
+            MessagePublisher.getInstance().publishCancel(cm2);
+            System.out.println();
+                        
+            System.out.println("21) Send a CancelMessage to ANN. ANN is subscribed for SBUX messages so ANN gets the message.");
+            CancelMessage cm3 = new CancelMessage("ANN", "SBUX", PriceFactory.makeLimitPrice("52.00"), 140, "Cancelled By User", BookSide.BUY, "ABC123XYZ");
+            MessagePublisher.getInstance().publishCancel(cm3);
+            System.out.println();
+            
+            System.out.println("22) Send a CancelMessage to ANN. ANN is NOT subscribed for IBM messages so ANN does not get the message.");
+            CancelMessage cm4 = new CancelMessage("ANN", "IBM", PriceFactory.makeLimitPrice("52.00"), 140, "Cancelled By User", BookSide.BUY, "ABC123XYZ");
+            MessagePublisher.getInstance().publishCancel(cm4);
+            System.out.println();
+            
+            System.out.println("23) Send a FillMessage to REX. REX is subscribed for SBUX messages so REX gets the message.");
+            FillMessage fm = new FillMessage("REX", "SBUX", PriceFactory.makeLimitPrice("52.00"), 140, "Cancelled By User", BookSide.BUY, "ABC123XYZ");
+            MessagePublisher.getInstance().publishFill(fm);
+            System.out.println();
+            
+            System.out.println("24) Send a FillMessage to REX. REX is NOT subscribed for IBM messages so REX does not get the message.");
+            FillMessage fm2 = new FillMessage("REX", "IBM", PriceFactory.makeLimitPrice("52.00"), 140, "Cancelled By User", BookSide.BUY, "ABC123XYZ");
+            MessagePublisher.getInstance().publishFill(fm2);
+            System.out.println();
+                        
+            System.out.println("25) Send a FillMessage to ANN. ANN is subscribed for SBUX messages so ANN gets the message.");
+            FillMessage fm3 = new FillMessage("ANN", "SBUX", PriceFactory.makeLimitPrice("52.00"), 140, "Cancelled By User", BookSide.BUY, "ABC123XYZ");
+            MessagePublisher.getInstance().publishFill(fm3);
+            System.out.println();
+            
+            System.out.println("26) Send a FillMessage to ANN. ANN is NOT subscribed for IBM messages so ANN does not get the message.");
+            FillMessage fm4 = new FillMessage("ANN", "IBM", PriceFactory.makeLimitPrice("52.00"), 140, "Cancelled By User", BookSide.BUY, "ABC123XYZ");
+            MessagePublisher.getInstance().publishFill(fm4);
+            System.out.println(); 
+                      
+            MessagePublisher.getInstance().unSubscribe(u2, "SBUX");
+            System.out.println("27) Send a MarketMessage. REX is the only MessagePublisher subscriber so only REX gets the message.");
+            MessagePublisher.getInstance().publishMarketMessage(new MarketMessage(GlobalConstants.MarketState.PREOPEN));
+            System.out.println(); 
+            
+            MessagePublisher.getInstance().subscribe(u2, "SBUX");
+            System.out.println("28) Send a MarketMessage. REX and ANN are MessagePublisher subscribers so REX & Ann get the message.");
+            MessagePublisher.getInstance().publishMarketMessage(new MarketMessage(GlobalConstants.MarketState.OPEN));
+            System.out.println(); 
+            
+            MessagePublisher.getInstance().unSubscribe(u1, "SBUX");
+            MessagePublisher.getInstance().unSubscribe(u2, "SBUX");
+            System.out.println("29) Send a MarketMessage. No users are MessagePublisher subscribers so No users get the message.");
+            MessagePublisher.getInstance().publishMarketMessage(new MarketMessage(GlobalConstants.MarketState.CLOSED));
+            System.out.println("Done with Message tests\n"); 
 
-        
-        try {
-            System.out.println("9) Attempt to create a quote using INVALID data (negative sell volume) - should throw an exception:");
-            quote1 = new Quote("USER2", "GE", PriceFactory.makeLimitPrice("$21.56"), 100, PriceFactory.makeLimitPrice("$21.62"), -50);
-            System.out.println("If this prints then you have accepted invalid data in your Quote - ERROR!");
-        } catch (Exception e) { // Catch anything you throw.
-            System.out.println("Properly handled an invalid volume -- error message is: " + e.getMessage() + "\n");
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
     }
+    
+    
+    static class UserImpl implements User {
 
-    public static void testPrices() {
-        makeSomeTestPriceObjects();
-        verifyTestPriceValues();
-        verifyMathematicalOperations();
-        verifyBooleanChecks();
-        try {
-			verifyComparisons();
-		} catch (InvalidPriceOperation e) {
-			e.printStackTrace();
-		}
-        verifyFlyweight();
+        private String uname;
 
-        System.out.println("\nPrice Tests Complete\n\n");
-    }
-
-    private static void makeSomeTestPriceObjects() {
-        System.out.println("1) Creating some Test Price Objects: ");
-        testPriceHolder.add(PriceFactory.makeLimitPrice("$10.50"));
-        testPriceHolder.add(PriceFactory.makeLimitPrice("$1400.99"));
-        testPriceHolder.add(PriceFactory.makeLimitPrice("$-51.52"));
-        testPriceHolder.add(PriceFactory.makeLimitPrice(".49"));
-        testPriceHolder.add(PriceFactory.makeLimitPrice("-0.89"));
-        testPriceHolder.add(PriceFactory.makeLimitPrice("12"));
-        testPriceHolder.add(PriceFactory.makeLimitPrice("90."));
-        testPriceHolder.add(PriceFactory.makeLimitPrice("14.5"));
-        testPriceHolder.add(PriceFactory.makeMarketPrice());
-        System.out.println("   " + testPriceHolder);
-        System.out.println();
-    }
-
-    private static void verifyTestPriceValues() {
-        System.out.println("2) Verifying the Values Stored in Your Test Price Objects:");
-        String format = "   %-11s --> %9s : %s%n";
-        System.out.format(format, "\"$10.50\"", testPriceHolder.get(0), testPriceHolder.get(0).toString().equals("$10.50") ? "PASS" : "FAIL");
-        System.out.format(format, "\"$1,400.99\"", testPriceHolder.get(1), testPriceHolder.get(1).toString().equals("$1,400.99") ? "PASS" : "FAIL");
-        System.out.format(format, "\"$-51.52\"", testPriceHolder.get(2), testPriceHolder.get(2).toString().equals("$-51.52") ? "PASS" : "FAIL");
-        System.out.format(format, "\"$0.49\"", testPriceHolder.get(3), testPriceHolder.get(3).toString().equals("$0.49") ? "PASS" : "FAIL");
-        System.out.format(format, "\"$-0.89\"", testPriceHolder.get(4), testPriceHolder.get(4).toString().equals("$-0.89") ? "PASS" : "FAIL");
-        System.out.format(format, "\"$12.00\"", testPriceHolder.get(5), testPriceHolder.get(5).toString().equals("$12.00") ? "PASS" : "FAIL");
-        System.out.format(format, "\"$90.00\"", testPriceHolder.get(6), testPriceHolder.get(6).toString().equals("$90.00") ? "PASS" : "FAIL");
-        System.out.format(format, "\"$14.50\"", testPriceHolder.get(7), testPriceHolder.get(7).toString().equals("$14.50") ? "PASS" : "FAIL");
-        System.out.format(format, "\"MKT\"", testPriceHolder.get(8), testPriceHolder.get(8).toString().equals("MKT") ? "PASS" : "FAIL");
-        System.out.println();
-    }
-
-    private static void verifyMathematicalOperations() {
-        System.out.println("3) Verifying the Functionality of your Mathematical Operations:");
-        String format = "   %-9s %c %9s = %9s : %s%n";
-        try {
-            Price results = testPriceHolder.get(0).add(testPriceHolder.get(1));
-            System.out.format(format, testPriceHolder.get(0), '+', testPriceHolder.get(1), results, results.toString().equals("$1,411.49") ? "PASS" : "FAIL");
-        } catch (InvalidPriceOperation ex) {
-            System.out.println("FAILED: " + ex.getMessage());
+        public UserImpl(String u) {
+            uname = u;
         }
-        try {
-            Price results = testPriceHolder.get(1).subtract(testPriceHolder.get(1));
-            System.out.format(format, testPriceHolder.get(1), '-', testPriceHolder.get(1), results, results.toString().equals("$0.00") ? "PASS" : "FAIL");
-        } catch (InvalidPriceOperation ex) {
-            System.out.println("FAILED: " + ex.getMessage());
-        }
-        try {
-            Price results = testPriceHolder.get(2).add(testPriceHolder.get(3));
-            System.out.format(format, testPriceHolder.get(2), '+', testPriceHolder.get(3), results, results.toString().equals("$-51.03") ? "PASS" : "FAIL");
-        } catch (InvalidPriceOperation ex) {
-            System.out.println("FAILED: " + ex.getMessage());
-        }
-        try {
-            Price results = testPriceHolder.get(3).multiply(4);
-            System.out.format(format, testPriceHolder.get(3), '*', 4, results, results.toString().equals("$1.96") ? "PASS" : "FAIL");
-        } catch (InvalidPriceOperation ex) {
-            System.out.println("FAILED: " + ex.getMessage());
-        }
-        try {
-            Price results = testPriceHolder.get(4).subtract(testPriceHolder.get(5));
-            System.out.format(format, testPriceHolder.get(4), '-', testPriceHolder.get(5), results, results.toString().equals("$-12.89") ? "PASS" : "FAIL");
-        } catch (InvalidPriceOperation ex) {
-            System.out.println("FAILED: " + ex.getMessage());
-        }
-        try {
-            Price results = testPriceHolder.get(5).add(testPriceHolder.get(6));
-            System.out.format(format, testPriceHolder.get(5), '+', testPriceHolder.get(6), results, results.toString().equals("$102.00") ? "PASS" : "FAIL");
-        } catch (InvalidPriceOperation ex) {
-            System.out.println("FAILED: " + ex.getMessage());
-        }
-        try {
-            testPriceHolder.get(8).add(testPriceHolder.get(0));
-            System.out.println("   FAIL: Adding a LIMIT price to a MARKET Price succeeded: (" + testPriceHolder.get(8) + " + " + testPriceHolder.get(0) + ")");
-        } catch (InvalidPriceOperation ex) {
-            System.out.println("   PASS: " + ex.getMessage() + ": (" + testPriceHolder.get(8) + " + " + testPriceHolder.get(0) + ")");
-        }
-        try {
-            testPriceHolder.get(8).subtract(testPriceHolder.get(0));
-            System.out.println("   FAIL: Subtracting a LIMIT price from a MARKET Price succeeded: (" + testPriceHolder.get(8) + " - " + testPriceHolder.get(0) + ")");
-        } catch (InvalidPriceOperation ex) {
-            System.out.println("   PASS: " + ex.getMessage() + ": (" + testPriceHolder.get(8) + " - " + testPriceHolder.get(0) + ")");
-        }
-        try {
-            testPriceHolder.get(8).multiply(10);
-            System.out.println("   FAIL: Multiplying a MARKET price succeeded: (" + testPriceHolder.get(8) + " + 10)");
-        } catch (InvalidPriceOperation ex) {
-            System.out.println("   PASS: " + ex.getMessage() + ": (" + testPriceHolder.get(8) + " * 10)");
-        }
-        System.out.println();
-    }
 
-    private static void verifyBooleanChecks() {
-        System.out.println("4) Verifying the Functionality of your Boolean Checks:");
-        System.out.println("   Value      | Negative Check |  MKT Check");
-        System.out.println("   -------------------------------------------");
-        String format = "   %-9s  | %-15s| %-12s%n";
-        System.out.format(format, testPriceHolder.get(0), testPriceHolder.get(0).isNegative() ? "    FAIL" : "    PASS", testPriceHolder.get(0).isMarket() ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(1), testPriceHolder.get(1).isNegative() ? "    FAIL" : "    PASS", testPriceHolder.get(1).isMarket() ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(2), testPriceHolder.get(2).isNegative() ? "    PASS" : "    FAIL", testPriceHolder.get(2).isMarket() ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(3), testPriceHolder.get(3).isNegative() ? "    FAIL" : "    PASS", testPriceHolder.get(3).isMarket() ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(4), testPriceHolder.get(4).isNegative() ? "    PASS" : "    FAIL", testPriceHolder.get(4).isMarket() ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(5), testPriceHolder.get(5).isNegative() ? "    FAIL" : "    PASS", testPriceHolder.get(5).isMarket() ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(6), testPriceHolder.get(6).isNegative() ? "    FAIL" : "    PASS", testPriceHolder.get(6).isMarket() ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(7), testPriceHolder.get(7).isNegative() ? "    FAIL" : "    PASS", testPriceHolder.get(7).isMarket() ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(8), testPriceHolder.get(8).isNegative() ? "    FAIL" : "    PASS", testPriceHolder.get(8).isMarket() ? "    PASS" : "    FAIL");
-        System.out.println();
-    }
+        @Override
+        public String getUserName() {
+            return uname;
+        }
 
-    private static void verifyComparisons() throws InvalidPriceOperation {
-        System.out.println("5) Verifying the Functionality of your Boolean Comparisons:");
-        Price testPrice = testPriceHolder.get(7);
+        @Override
+        public void acceptLastSale(String product, Price p, int v) {
+            System.out.println("User " + getUserName() + " Received Last Sale for " + product + " " + v + "@" + p);
+        }
 
-        System.out.println("   (Comparison to " + testPrice + ")");
+        @Override
+        public void acceptMessage(FillMessage fm) {
+            System.out.println("User " + getUserName() + " Received Fill Message: " + fm);
+        }
 
-        String format = "    %-10s | %-15s | %-12s | %-12s | %-9s%n";
-        System.out.println("    Value      | greaterOrEqual  | greaterThan  | lessOrEqual  | lessThan");
-        System.out.println("    -------------------------------------------------------------------------");
-        System.out.format(format, testPriceHolder.get(0),
-                testPriceHolder.get(0).greaterOrEqual(testPrice) ? "    FAIL" : "    PASS", testPriceHolder.get(0).greaterThan(testPrice) ? "    FAIL" : "    PASS",
-                testPriceHolder.get(0).lessOrEqual(testPrice) ? "    PASS" : "    FAIL", testPriceHolder.get(0).lessThan(testPrice) ? "    PASS" : "    FAIL");
-        System.out.format(format, testPriceHolder.get(1),
-                testPriceHolder.get(1).greaterOrEqual(testPrice) ? "    PASS" : "    FAIL", testPriceHolder.get(1).greaterThan(testPrice) ? "    PASS" : "    FAIL",
-                testPriceHolder.get(1).lessOrEqual(testPrice) ? "    FAIL" : "    PASS", testPriceHolder.get(1).lessThan(testPrice) ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(2),
-                testPriceHolder.get(2).greaterOrEqual(testPrice) ? "    FAIL" : "    PASS", testPriceHolder.get(2).greaterThan(testPrice) ? "    FAIL" : "    PASS",
-                testPriceHolder.get(2).lessOrEqual(testPrice) ? "    PASS" : "    FAIL", testPriceHolder.get(2).lessThan(testPrice) ? "    PASS" : "    FAIL");
-        System.out.format(format, testPriceHolder.get(3),
-                testPriceHolder.get(3).greaterOrEqual(testPrice) ? "    FAIL" : "    PASS", testPriceHolder.get(3).greaterThan(testPrice) ? "    FAIL" : "    PASS",
-                testPriceHolder.get(3).lessOrEqual(testPrice) ? "    PASS" : "    FAIL", testPriceHolder.get(3).lessThan(testPrice) ? "    PASS" : "    FAIL");
-        System.out.format(format, testPriceHolder.get(4),
-                testPriceHolder.get(4).greaterOrEqual(testPrice) ? "    FAIL" : "    PASS", testPriceHolder.get(4).greaterThan(testPrice) ? "    FAIL" : "    PASS",
-                testPriceHolder.get(4).lessOrEqual(testPrice) ? "    PASS" : "    FAIL", testPriceHolder.get(4).lessThan(testPrice) ? "    PASS" : "    FAIL");
-        System.out.format(format, testPriceHolder.get(5),
-                testPriceHolder.get(5).greaterOrEqual(testPrice) ? "    FAIL" : "    PASS", testPriceHolder.get(5).greaterThan(testPrice) ? "    FAIL" : "    PASS",
-                testPriceHolder.get(5).lessOrEqual(testPrice) ? "    PASS" : "    FAIL", testPriceHolder.get(5).lessThan(testPrice) ? "    PASS" : "    FAIL");
-        System.out.format(format, testPriceHolder.get(6),
-                testPriceHolder.get(6).greaterOrEqual(testPrice) ? "    PASS" : "    FAIL", testPriceHolder.get(6).greaterThan(testPrice) ? "    PASS" : "    FAIL",
-                testPriceHolder.get(6).lessOrEqual(testPrice) ? "    FAIL" : "    PASS", testPriceHolder.get(6).lessThan(testPrice) ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(7),
-                testPriceHolder.get(7).greaterOrEqual(testPrice) ? "    PASS" : "    FAIL", testPriceHolder.get(7).greaterThan(testPrice) ? "    FAIL" : "    PASS",
-                testPriceHolder.get(7).lessOrEqual(testPrice) ? "    PASS" : "    FAIL", testPriceHolder.get(7).lessThan(testPrice) ? "    FAIL" : "    PASS");
-        System.out.format(format, testPriceHolder.get(8),
-                testPriceHolder.get(8).greaterOrEqual(testPrice) ? "    FAIL" : "    PASS", testPriceHolder.get(8).greaterThan(testPrice) ? "    FAIL" : "    PASS",
-                testPriceHolder.get(8).lessOrEqual(testPrice) ? "    FAIL" : "    PASS", testPriceHolder.get(8).lessThan(testPrice) ? "    FAIL" : "    PASS");
-        System.out.println();
+        @Override
+        public void acceptMessage(CancelMessage cm) {
+            System.out.println("User " + getUserName() + " Received Cancel Message: " + cm);
+        }
 
-    }
+        @Override
+        public void acceptMarketMessage(String message) {
+            System.out.println("User " + getUserName() + " Received Market Message: " + message);
+        }
 
-    private static void verifyFlyweight() {
-        System.out.println("6) Verifying your Flyweight Implementation:");
-        String format = "    Price %-9s is same object as new %9s: %s%n";
-        Price p1 = PriceFactory.makeLimitPrice("10.50");
-        System.out.format(format, testPriceHolder.get(0), p1, testPriceHolder.get(0) == p1 ? "PASS" : "FAIL");
-        System.out.format(format, testPriceHolder.get(1), p1, testPriceHolder.get(1) == p1 ? "FAIL" : "PASS");
+        @Override
+        public void acceptTicker(String product, Price p, char direction) {
+            System.out.println("User " + getUserName() + " Received Ticker for " + product + " " + p + " " + direction);
+        }
 
-        p1 = PriceFactory.makeMarketPrice();
-        System.out.format(format, testPriceHolder.get(8), p1, testPriceHolder.get(8) == p1 ? "PASS" : "FAIL");
-        System.out.format(format, testPriceHolder.get(1), p1, testPriceHolder.get(1) == p1 ? "FAIL" : "PASS");
+        @Override
+        public void acceptCurrentMarket(String product, Price bp, int bv, Price sp, int sv) {
+            System.out.println("User " + getUserName() + " Received Current Market for " + product + " " + bv + "@" + bp + " - " + sv + "@" + sp);
+        }
     }
 }
-
-/*
-Expected output:
-
-1) Creating some Test Price Objects: 
-   [$10.50, $1,400.99, $-51.52, $0.49, $-0.89, $12.00, $90.00, $14.50, MKT]
-
-2) Verifying the Values Stored in Your Test Price Objects:
-   "$10.50"    -->    $10.50 : PASS
-   "$1,400.99" --> $1,400.99 : PASS
-   "$-51.52"   -->   $-51.52 : PASS
-   "$0.49"     -->     $0.49 : PASS
-   "$-0.89"    -->    $-0.89 : PASS
-   "$12.00"    -->    $12.00 : PASS
-   "$90.00"    -->    $90.00 : PASS
-   "$14.50"    -->    $14.50 : PASS
-   "MKT"       -->       MKT : PASS
-
-3) Verifying the Functionality of your Mathematical Operations:
-   $10.50    + $1,400.99 = $1,411.49 : PASS
-   $1,400.99 - $1,400.99 =     $0.00 : PASS
-   $-51.52   +     $0.49 =   $-51.03 : PASS
-   $0.49     *         4 =     $1.96 : PASS
-   $-0.89    -    $12.00 =   $-12.89 : PASS
-   $12.00    +    $90.00 =   $102.00 : PASS
-   PASS: Cannot add a LIMIT price to a MARKET Price: (MKT + $10.50)
-   PASS: Cannot subtract a LIMIT price from a MARKET Price: (MKT - $10.50)
-   PASS: Cannot multiply a MARKET price: (MKT * 10)
-
-4) Verifying the Functionality of your Boolean Checks:
-   Value      | Negative Check |  MKT Check
-   -------------------------------------------
-   $10.50     |     PASS       |     PASS    
-   $1,400.99  |     PASS       |     PASS    
-   $-51.52    |     PASS       |     PASS    
-   $0.49      |     PASS       |     PASS    
-   $-0.89     |     PASS       |     PASS    
-   $12.00     |     PASS       |     PASS    
-   $90.00     |     PASS       |     PASS    
-   $14.50     |     PASS       |     PASS    
-   MKT        |     PASS       |     PASS    
-
-5) Verifying the Functionality of your Boolean Comparisons:
-   (Comparison to $14.50)
-    Value      | greaterOrEqual  | greaterThan  | lessOrEqual  | lessThan
-    -------------------------------------------------------------------------
-    $10.50     |     PASS        |     PASS     |     PASS     |     PASS 
-    $1,400.99  |     PASS        |     PASS     |     PASS     |     PASS 
-    $-51.52    |     PASS        |     PASS     |     PASS     |     PASS 
-    $0.49      |     PASS        |     PASS     |     PASS     |     PASS 
-    $-0.89     |     PASS        |     PASS     |     PASS     |     PASS 
-    $12.00     |     PASS        |     PASS     |     PASS     |     PASS 
-    $90.00     |     PASS        |     PASS     |     PASS     |     PASS 
-    $14.50     |     PASS        |     PASS     |     PASS     |     PASS 
-    MKT        |     PASS        |     PASS     |     PASS     |     PASS 
-
-6) Verifying your Flyweight Implementation:
-    Price $10.50    is same object as new    $10.50: PASS
-    Price $1,400.99 is same object as new    $10.50: PASS
-    Price MKT       is same object as new       MKT: PASS
-    Price $1,400.99 is same object as new       MKT: PASS
-
-Price Tests Complete
-
-
-1) Create and print the content of a valid Order using Tradable reference:
-Tradable's toString: USER1 order: BUY 250 GE at $21.59 (Original Vol: 250, CXL'd Vol: 0), ID: USER1GE$21.5988078560796096
-
-2) Create and print the content of a TradableDTO:
-TradableDTO's toString: Product: GE, Price: $21.59, OriginalVolume: 250, RemainingVolume: 250, CancelledVolume: 0, User: USER1, Side: BUY, IsQuote: false, Id: USER1GE$21.5988078560796096
-
-3) Attempt to create an order using INVALID data (Zero volume) - should throw an exception:
-Properly handled an invalid volume -- error message is:
-	Invalid Order Volume: 0
-
-4) Change the cancelled and remaining volume of the order and display resulting tradable:
-Tradable's toString: USER1 order: BUY 10 GE at $21.59 (Original Vol: 250, CXL'd Vol: 25), ID: USER1GE$21.5988078560796096
-
-5) Change the Cancelled Volume of the order to greater than original volume - should throw an exception:
-Properly handled an invalid cancelled volume -- error message is:
-	Requested new Cancelled Volume (300) plus the Remaining Volume (10) exceeds the tradable's Original Volume (250)
-
-6) Change the Remaining Volume of the order to greater than original volume - should throw an exception:
-Properly handled an invalid remaining volume -- error message is: 
-	Requested new Remaining Volume (300) plus the Cancelled Volume (10) exceeds the tradable's Original Volume (250)
-
-7) Create and print the content of a valid Quote:
-Quote's toString: USER2 quote: GE $21.56 x 100 (Original Vol: 100, CXL'd Vol: 0) [USER2GE88078580428652] - $21.62 x 100 (Original Vol: 100, CXL'd Vol: 0) [USER2GE88078580448285]
-
-8) Display the individual Quote Sides of the new Quote object:
-	QuoteSide's toString: $21.56 x 100 (Original Vol: 100, CXL'd Vol: 0) [USER2GE88078580428652]
-	QuoteSide's toString: $21.62 x 100 (Original Vol: 100, CXL'd Vol: 0) [USER2GE88078580448285]
-
-9) Attempt to create a quote using INVALID data (negative sell volume) - should throw an exception:
-Properly handled an invalid volume -- error message is: Invalid SELL-Side Volume: -50
-
-*/

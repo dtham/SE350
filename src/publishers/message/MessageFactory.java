@@ -32,7 +32,7 @@ public static FillMessageImpl createFillMessageImpl(String user, String product,
     return new MarketMessageImpl(state);
   }
 
-protected static GeneralMarketMessage createFillMessageImpl(String user, String product, 
+protected static GeneralMarketMessageImpl createGeneralMarketMessageImpl(String user, String product, 
         Price price, int vol, String details, BookSide side, String id) throws InvalidMessageException{
     return new GeneralMarketMessageImpl(user, product, price, vol, details, side, id);
 }

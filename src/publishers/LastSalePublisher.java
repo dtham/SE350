@@ -1,60 +1,63 @@
 package publishers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import price.Price;
-import price.PriceFactory;
-import price.exceptions.InvalidPriceOperation;
-import publishers.exceptions.AlreadySubscribedException;
-import publishers.exceptions.InvalidPublisherOperation;
-import publishers.exceptions.NotSubscribedException;
-import tradable.exceptions.InvalidVolumeException;
 import client.User;
-import client.exceptions.EmptyParameterException;
+import price.Price;
+import publishers.exceptions.PublisherExceptions;
+import publishers.message.CancelMessage;
+import publishers.message.FillMessage;
+import publishers.message.MarketDataDTO;
+import publishers.message.MarketMessage;
 
-public class LastSalePublisher implements Publisher 
-{
-	private SubscriptionHandler subscriptionHandler;
-	private HashMap<String, ArrayList<User>> subscriptions = new HashMap<String, ArrayList<User>>();
-	private static LastSalePublisher LastSalePublisherInstance = null;
-	private LastSalePublisher() throws InvalidPublisherOperation { subscriptionHandler = SubscriptionHandlerFactory.makeSubscriptionHandler(new SubscriptionHandler()); };
-	
-	
-	public static LastSalePublisher getInstance() throws InvalidPublisherOperation
-	{
-		if (LastSalePublisherInstance == null)
-		{
-			LastSalePublisherInstance = new LastSalePublisher();
-		}
-		return LastSalePublisherInstance;
-	}
-	
-	
-	public synchronized void publishLastSale(String product, Price p, int v) throws InvalidPriceOperation, InvalidVolumeException, InvalidPublisherOperation, EmptyParameterException
-	{
-		if (p == null)
-		{
-			p = PriceFactory.makeLimitPrice(0);
-		}
-		if (subscriptions.get(product) != null)
-		{
-			for (User u : subscriptions.get(product))
-			{
-				u.acceptLastSale(product, p, v);			
-			}
-		}
-		TickerPublisher.getInstance().publishTicker(product, p);
-	}
-	
-	
-	public synchronized void subscribe(User u, String product) throws AlreadySubscribedException
-	{
-		subscriptions.put(product, subscriptionHandler.subscribe(u, product, subscriptions.get(product)));
-	}
-	
-	
-	public synchronized void unSubscribe(User u, String product) throws NotSubscribedException
-	{
-		subscriptions.put(product, subscriptionHandler.unSubscribe(u, product, subscriptions.get(product)));
-	}
+
+public class LastSalePublisher implements
+        MessagePublisherSubject {
+
+    private volatile static LastSalePublisher instance;
+    private MessagePublisherSubject messagePublisherSubjectImpl;
+
+   public static LastSalePublisher getInstance() {
+      if (instance == null) {
+        synchronized (LastSalePublisher.class) {
+          if (instance == null) {
+            instance = MessagePublisherSubjectFactory
+                    .createLastSalePublisher();
+          }
+        }
+      }
+      return instance;
+  }
+
+  protected LastSalePublisher(MessagePublisherSubject impl) {
+        messagePublisherSubjectImpl = impl;
+  }
+
+  @Override
+  public synchronized void subscribe(User u, String product) throws PublisherExceptions {
+        messagePublisherSubjectImpl.subscribe(u, product);
+  }
+
+  @Override
+  public synchronized void unSubscribe(User u, String product) throws PublisherExceptions {
+        messagePublisherSubjectImpl.unSubscribe(u, product);
+  }
+
+  @Override
+  public synchronized void publishCurrentMarket(MarketDataDTO m) {}
+
+  @Override
+  public synchronized void publishLastSale(String product, Price p, int v) {
+        messagePublisherSubjectImpl.publishLastSale(product, p, v);
+  }
+
+  @Override
+  public synchronized void publishTicker(String product, Price p) {}
+
+  @Override
+  public synchronized void publishCancel(CancelMessage cm) {}
+
+  @Override
+  public synchronized void publishFill(FillMessage fm) {}
+
+  @Override
+  public synchronized void publishMarketMessage(MarketMessage mm) {}
 }

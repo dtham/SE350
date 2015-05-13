@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 package publishers.message;
-import publishers.exceptions.InvalidMessageException;
+import publishers.message.exceptions.InvalidMessageException;
 import price.Price;
 import constants.GlobalConstants.BookSide;
 

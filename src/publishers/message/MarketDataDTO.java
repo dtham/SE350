@@ -1,14 +1,14 @@
 package publishers.message;
 import price.Price;
 
-public class MarketDTO {
+public class MarketDataDTO {
 	public String product;
 	public Price buyPrice;
 	public int buyVolume;
 	public Price sellPrice;
 	public int sellVolume;
 	
-	public MarketDTO (String theProduct, Price theBuyPrice, int theBuyVolume, Price theSellPrice, int theSellVolume ){
+	public MarketDataDTO (String theProduct, Price theBuyPrice, int theBuyVolume, Price theSellPrice, int theSellVolume ){
 		product = theProduct;
 		buyPrice = theBuyPrice;
 		buyVolume = theBuyVolume;
