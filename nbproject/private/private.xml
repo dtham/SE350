@@ -3,24 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/MarketMessage.java</file>
             <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/MessagePublisher.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/MessageFactory.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/GeneralMarketMessage.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/FillMessage.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/GeneralMarketMessageImpl.java</file>
             <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/MessagePublisherSubjectImpl.java</file>
             <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/MessagePublisherSubjectFactory.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/CurrentMarketPublisher.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/FillMessageImpl.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/LastSalePublisher.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/driver/main.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/MarketMessageImpl.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/StateOfMarket.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/MarketDataDTO.java</file>
             <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/TickerPublisher.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/CancelMessageImpl.java</file>
-            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/message/CancelMessage.java</file>
+            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/CurrentMarketPublisher.java</file>
+            <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/LastSalePublisher.java</file>
             <file>file:/C:/Users/Daryl's/Documents/NetBeansProjects/SE350/src/publishers/MessagePublisherSubject.java</file>
         </group>
     </open-files>
