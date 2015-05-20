@@ -61,8 +61,13 @@ public class GeneralMarketMessageImpl implements GeneralMarketMessage{
     }
 
     @Override
-    public GlobalConstants.BookSide getSide() {
+    public BookSide getSide() {
         return side;
+    }
+    
+    @Override
+    public final String getID() {
+        return id;
     }
     
     @Override
@@ -92,22 +97,24 @@ public class GeneralMarketMessageImpl implements GeneralMarketMessage{
     }
     this.price = price;
   }
-
-  private void setVolume(int volume) throws InvalidMessageException {
+  
+  @Override
+  public void setVolume(int volume) throws InvalidMessageException {
     if (volume < 0) {
       throw new InvalidMessageException("Volume cannot be negative.");
     }
     this.volume = volume;
   }
-
-  private void setDetails(String details) throws InvalidMessageException {
+  
+  @Override
+  public void setDetails(String details) throws InvalidMessageException {
     if (details == null || details.isEmpty()) {
       throw new InvalidMessageException("Details cannot be null or empty");
     }
     this.details = details;
     }
-
-  private void setSide(BookSide side) throws InvalidMessageException {
+  
+    private void setSide(BookSide side) throws InvalidMessageException {
     if (!(side instanceof BookSide)) {
       throw new InvalidMessageException("Side must be a valid Book Side");
     }

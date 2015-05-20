@@ -8,6 +8,7 @@ package tradeprocessing.productbook;
 import constants.GlobalConstants.BookSide;
 import constants.GlobalConstants.MarketState;
 import java.util.*;
+import java.util.Map.Entry;
 import price.Price;
 import price.PriceFactory;
 import tradable.Tradable;
@@ -22,9 +23,14 @@ import publishers.message.CancelMessage;
 import publishers.message.FillMessage;
 import publishers.message.MarketDataDTO;
 import publishers.message.exceptions.InvalidMessageException;
+import tradeprocessing.productbook.exceptions.InvalidProductBookSideValueException;
 import tradeprocessing.productbook.exceptions.ProductBookException;
 import tradeprocessing.productbook.exceptions.OrderNotFoundException;
+import tradeprocessing.productbook.exceptions.ProductBookSideException;
+import tradeprocessing.productbook.exceptions.DataValidationException;
 import tradeprocessing.productservice.ProductService;
+
+
 /**
  *
  * @author Daryl's
@@ -43,7 +49,9 @@ public class ProductBook {
     
     private HashMap<Price, ArrayList<Tradable>> oldEntries = new HashMap<>();
     
-    public ProductBook(String sym) throws ProductBookException{
+    public ProductBook(String sym) throws ProductBookException, ProductBookSideException, 
+            InvalidProductBookSideValueException, 
+            tradeprocessing.tradeprocessor.exceptions.InvalidProductBookSideValueException{
         setSymbol(sym);
         buySide = new ProductBookSide(this, BookSide.BUY);
         sellSide = new ProductBookSide(this, BookSide.SELL);
@@ -58,7 +66,7 @@ public class ProductBook {
     
     public synchronized final ArrayList<TradableDTO>
             getOrdersWithRemainingQty(String userName){
-        ArrayList<TradableDTO> t = new ArrayList<>;
+        ArrayList<TradableDTO> t = new ArrayList<>();
         t.addAll(buySide.getOrdersWithRemainingQty(userName));
         t.addAll(sellSide.getOrdersWithRemainingQty(userName));
         return t;
@@ -67,10 +75,10 @@ public class ProductBook {
     public synchronized final void checkTooLateToCancel(String orderId)
           throws OrderNotFoundException, InvalidMessageException {
         boolean isFound = false;
-        for(Map.Entry<Price, ArrayList<Tradeable>> row : oldEntries.entrySet()) {
-          ListIterator<Tradeable> iterator = row.getValue().listIterator();
+        for(Entry<Price, ArrayList<Tradable>> row : oldEntries.entrySet()) {
+          ListIterator<Tradable> iterator = row.getValue().listIterator();
           while (iterator.hasNext()) {
-            Tradeable t = iterator.next();
+            Tradable t = iterator.next();
             if (t.getId().equals(orderId)) {
               isFound = true;
               MessagePublisher.getInstance().publishCancel(new CancelMessage(
@@ -109,10 +117,10 @@ public class ProductBook {
                 topSellPrice, bestSellSideVolume);
     }
     
-    public synchronized final void addOldEntry(Tradeable t)
-          throws InvalidVolumeException {
+    public synchronized final void addOldEntry(Tradable t)
+          throws InvalidVolumeException, SE350.InvalidVolumeException {
         if (!oldEntries.containsKey(t.getPrice())) {
-          oldEntries.put(t.getPrice(), new ArrayList<Tradeable>());
+          oldEntries.put(t.getPrice(), new ArrayList<Tradable>());
         }
         t.setCancelledVolume(t.getRemainingVolume());
         t.setRemainingVolume(0);
@@ -126,16 +134,16 @@ public class ProductBook {
         if (buyPrice == null || sellPrice == null) { return; }
         while (buyPrice.greaterOrEqual(sellPrice) || buyPrice.isMarket()
                 || sellPrice.isMarket()) {
-          ArrayList<Tradeable> topOfBuySide = buySide.getEntriesAtPrice(buyPrice);
+          ArrayList<Tradable> topOfBuySide = buySide.getEntriesAtPrice(buyPrice);
           HashMap<String, FillMessage> allFills = null;
-          ArrayList<Tradeable> toRemove = new ArrayList<>();
-          for (Tradeable t : topOfBuySide) {
+          ArrayList<Tradable> toRemove = new ArrayList<>();
+          for (Tradable t : topOfBuySide) {
             allFills = sellSide.tryTrade(t);
             if (t.getRemainingVolume() == 0) {
               toRemove.add(t);
             }
           }
-          for (Tradeable t : toRemove) {
+          for (Tradable t : toRemove) {
             buySide.removeTradeable(t);
           }
           updateCurrentMarket();
@@ -247,7 +255,7 @@ public class ProductBook {
         return msgs.get(0).getVolume();
     }
     
-    private synchronized void addToBook(BookSide side, Tradeable trd)
+    private synchronized void addToBook(BookSide side, Tradable trd)
           throws InvalidMessageException, InvalidVolumeException {
         if (ProductService.getInstance().getMarketState().equals(
                 MarketState.PREOPEN)) {

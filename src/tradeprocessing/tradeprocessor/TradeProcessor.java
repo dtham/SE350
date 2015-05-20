@@ -1,14 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tradeprocessing.tradeprocessor;
 
-/**
- *
- * @author Daryl's
- */
-public class TradeProcessor {
-    
+import java.util.HashMap;
+import publishers.message.FillMessage;
+import publishers.message.exceptions.InvalidPublisherOperation;
+import tradable.Tradable;
+import tradable.exceptions.InvalidVolumeException;
+import publishers.message.exceptions.InvalidMessageException;
+
+
+public interface TradeProcessor 
+{
+	
+	public HashMap<String, FillMessage> doTrade(Tradable trd) 
+                throws InvalidVolumeException, InvalidMessageException, InvalidPublisherOperation;
 }

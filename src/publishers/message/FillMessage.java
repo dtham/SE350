@@ -61,6 +61,22 @@ public class FillMessage implements GeneralMarketMessage, Comparable<FillMessage
     public String toString(){
         return fm.toString();
     }
+    
+   
+    @Override
+    public final String getID() {
+        return fm.getID();
+    }
+
+    @Override
+    public void setVolume(int volume) throws InvalidMessageException {
+        fm.setVolume(volume);
+    }
+
+    @Override
+    public void setDetails(String details) throws InvalidMessageException {
+        fm.setDetails(details);
+    }
 }
 
 

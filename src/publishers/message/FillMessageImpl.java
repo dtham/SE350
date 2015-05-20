@@ -58,4 +58,19 @@ public class FillMessageImpl implements GeneralMarketMessage {
         String str = gm.toString();
         return str.substring(0, str.indexOf("ID") -2);
     }
+
+    @Override
+    public String getID() {
+        return gm.getID();
+    }
+
+    @Override
+    public void setVolume(int volume) throws InvalidMessageException {
+        gm.setVolume(volume);
+    }
+
+    @Override
+    public void setDetails(String details) throws InvalidMessageException {
+        gm.setDetails(details);
+    }
 }

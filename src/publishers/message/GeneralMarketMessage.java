@@ -6,7 +6,7 @@
 package publishers.message;
 import price.Price;
 import constants.GlobalConstants.BookSide;
-
+import publishers.message.exceptions.InvalidMessageException;
 
 
 /**
@@ -27,4 +27,9 @@ public interface GeneralMarketMessage {
     
     public BookSide getSide();
     
+    public String getID();
+    
+    public void setVolume(int volume) throws InvalidMessageException;
+    
+    public void setDetails(String details) throws InvalidMessageException;
 }

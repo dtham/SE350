@@ -1,14 +1,25 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tradeprocessing.tradeprocessor;
 
-/**
- *
- * @author Daryl's
- */
+import tradeprocessing.productbook.ProductBookSide;
+import tradeprocessing.tradeprocessor.exceptions.InvalidProductBookSideValueException;
+
+
 public class TradeProcessorFactory {
-    
+    private synchronized static TradeProcessor
+          createTradeProcessorPriceTimeImpl(ProductBookSide pbs)
+          throws InvalidProductBookSideValueException {
+            return new TradeProcessorPriceTimeImpl(pbs);
+    }
+          
+    public synchronized static TradeProcessor
+          createTradeProcessor(String type, ProductBookSide pbs)
+          throws InvalidProductBookSideValueException {
+        TradeProcessor processor;
+        switch(type) {
+          case "price-time":
+          default:
+            processor = createTradeProcessorPriceTimeImpl(pbs);
+        }
+        return processor;
+    }
 }

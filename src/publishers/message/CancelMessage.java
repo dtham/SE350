@@ -66,4 +66,19 @@ public class CancelMessage implements GeneralMarketMessage, Comparable<CancelMes
 	{
 		return cancelMessageImpl.toString();
 	}
+
+    @Override
+    public String getID() {
+        return cancelMessageImpl.getID();
+    }
+
+    @Override
+    public void setVolume(int volume) throws InvalidMessageException {
+        cancelMessageImpl.setVolume(volume);
+    }
+
+    @Override
+    public void setDetails(String details) throws InvalidMessageException {
+        cancelMessageImpl.setDetails(details);
+    }
 }

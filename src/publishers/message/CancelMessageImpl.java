@@ -53,4 +53,19 @@ public CancelMessageImpl(String user, String product, Price price, int vol, Stri
     public BookSide getSide() {
         return gm.getSide();
     }
+
+    @Override
+    public String getID() {
+        return gm.getID();
+    }
+
+    @Override
+    public void setVolume(int volume) throws InvalidMessageException {
+        gm.setVolume(volume);
+    }
+
+    @Override
+    public void setDetails(String details) throws InvalidMessageException {
+        gm.setDetails(details);
+    }
 }
