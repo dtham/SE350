@@ -1,6 +1,6 @@
 
 package tradable;
-import SE350.InvalidVolumeException;
+import tradable.exceptions.InvalidVolumeException;
 import price.Price;
 
 
