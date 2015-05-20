@@ -21,6 +21,7 @@ import publishers.MessagePublisher;
 import publishers.message.CancelMessage;
 import publishers.message.FillMessage;
 import publishers.message.exceptions.InvalidMessageException;
+import publishers.message.exceptions.InvalidPublisherOperation;
 import tradeprocessing.tradeprocessor.TradeProcessor;
 import tradeprocessing.tradeprocessor.TradeProcessorFactory;
 import tradeprocessing.productbook.exceptions.ProductBookSideException;
@@ -217,7 +218,7 @@ public class ProductBookSide {
         removeBookEntryKeys = new ArrayList<>();
     }
     
-    public final void addOldEntry(Tradable t) throws InvalidVolumeException, SE350.InvalidVolumeException {
+    public final void addOldEntry(Tradable t) throws InvalidVolumeException {
         parent.addOldEntry(t);
     }
     
@@ -232,7 +233,7 @@ public class ProductBookSide {
     }
     
     public HashMap<String, FillMessage> tryTrade(Tradable trd)
-          throws InvalidMessageException, InvalidVolumeException {
+          throws InvalidMessageException, InvalidVolumeException, InvalidPublisherOperation {
         HashMap<String, FillMessage> allFills;
         if (side.equals(BookSide.BUY)) {
           allFills = trySellAgainstBuySideTrade(trd);
@@ -247,7 +248,7 @@ public class ProductBookSide {
     
     public synchronized HashMap<String, FillMessage>
             trySellAgainstBuySideTrade(Tradable trd)
-            throws InvalidMessageException, InvalidVolumeException {
+            throws InvalidMessageException, InvalidVolumeException, InvalidPublisherOperation {
       HashMap<String, FillMessage> allFills = new HashMap<>();
       HashMap<String, FillMessage> fillMsgs = new HashMap<>();
       while((trd.getRemainingVolume() > 0 && !bookEntries.isEmpty()) &&
@@ -262,7 +263,7 @@ public class ProductBookSide {
             
     public synchronized HashMap<String, FillMessage>
           tryBuyAgainstSellSideTrade(Tradable trd)
-          throws InvalidMessageException, InvalidVolumeException {
+          throws InvalidMessageException, InvalidVolumeException, InvalidPublisherOperation {
         HashMap<String, FillMessage> allFills = new HashMap<>();
         HashMap<String, FillMessage> fillMsgs = new HashMap<>();
         while((trd.getRemainingVolume() > 0 && !bookEntries.isEmpty()) &&

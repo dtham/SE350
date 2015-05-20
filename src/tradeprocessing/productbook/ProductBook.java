@@ -118,7 +118,7 @@ public class ProductBook {
     }
     
     public synchronized final void addOldEntry(Tradable t)
-          throws InvalidVolumeException, SE350.InvalidVolumeException {
+          throws InvalidVolumeException {
         if (!oldEntries.containsKey(t.getPrice())) {
           oldEntries.put(t.getPrice(), new ArrayList<Tradable>());
         }
