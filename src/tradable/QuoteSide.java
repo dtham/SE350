@@ -1,5 +1,6 @@
 
 package tradable;
+import constants.GlobalConstants.BookSide;
 import tradable.exceptions.InvalidVolumeException;
 import price.Price;
 

@@ -2,14 +2,14 @@
 package tradable;
 import price.Price;
 import tradable.exceptions.InvalidVolumeException;
-
+import constants.GlobalConstants.BookSide;
 /**
  *
  * @author Daryl
  */
 public interface Tradable {
     
-    public static enum BookSide{BUY, SELL};
+   // public static enum BookSide{BUY, SELL};
     
     public String getProduct();
     

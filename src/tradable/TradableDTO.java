@@ -1,7 +1,9 @@
 
 package tradable;
 import price.Price;
+import constants.GlobalConstants;
 import constants.GlobalConstants.BookSide;
+
 import java.util.Locale;
 
 
@@ -12,12 +14,12 @@ public class TradableDTO {
     public int remainingVolume;
     public int cancelledVolume;
     public String user;
-    public Tradable.BookSide side;
+    public GlobalConstants.BookSide side;
     public boolean isQuote;
     public String id;
     
     public TradableDTO(String theProduct, Price thePrice, int theOriginalVolume,
-            int theRemainingVolume, int theCancelledVolume, String theUser, Tradable.BookSide theSide, 
+            int theRemainingVolume, int theCancelledVolume, String theUser, GlobalConstants.BookSide theSide, 
             boolean ifIsQuote, String theId){
         product = theProduct;
         price = thePrice; 

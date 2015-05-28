@@ -5,9 +5,6 @@ import price.Price;
 import constants.GlobalConstants.BookSide;
 
 
-
-
-
 public class Quote {
     
     private String userName;
@@ -20,8 +17,8 @@ public class Quote {
             int buyVolume, Price sellPrice, int sellVolume)throws InvalidVolumeException{
         this.userName = userName; 
         stockSymbol = productSymbol;
-        buyQuoteSide = new QuoteSide(userName, productSymbol, buyPrice, buyVolume, Tradable.BookSide.BUY);
-        sellQuoteSide = new QuoteSide(userName, productSymbol, sellPrice, sellVolume, Tradable.BookSide.SELL);
+        buyQuoteSide = new QuoteSide(userName, productSymbol, buyPrice, buyVolume, BookSide.BUY);
+        sellQuoteSide = new QuoteSide(userName, productSymbol, sellPrice, sellVolume, BookSide.SELL);
     }
     
     public String getUserName(){
@@ -32,8 +29,8 @@ public class Quote {
         return stockSymbol;
     }
     
-    public QuoteSide getQuoteSide(String sideIn) throws InvalidVolumeException{
-        if(sideIn.equals(BookSide.BUY)){
+    public QuoteSide getQuoteSide(BookSide sell) throws InvalidVolumeException{
+        if(sell.equals(BookSide.BUY)){
             return (QuoteSide) buyQuoteSide;
         }
         else{

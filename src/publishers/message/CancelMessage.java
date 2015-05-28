@@ -2,6 +2,7 @@ package publishers.message;
 
 import price.Price;
 import price.exceptions.InvalidPriceOperation;
+import constants.GlobalConstants;
 import constants.GlobalConstants.BookSide;
 import publishers.message.exceptions.InvalidMessageException;
 
@@ -13,7 +14,7 @@ public class CancelMessage implements GeneralMarketMessage, Comparable<CancelMes
     protected GeneralMarketMessage cancelMessageImpl;
     
 	public CancelMessage(String userName, String productName, Price p, int vol, 
-                String details, BookSide side, String id) throws InvalidPriceOperation, InvalidMessageException
+                String details, GlobalConstants.BookSide side, String id) throws InvalidPriceOperation, InvalidMessageException
 	{
             cancelMessageImpl = MessageFactory.createCancelMessageImpl(userName, 
                     productName, p, vol, details, side, id);

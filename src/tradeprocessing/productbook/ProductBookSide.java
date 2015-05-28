@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package tradeprocessing.productbook;
 
 /**
@@ -11,9 +7,12 @@ package tradeprocessing.productbook;
  */
 
 import constants.GlobalConstants.BookSide;
+
 import java.util.*;
+
 import price.Price;
 import price.PriceFactory;
+import price.exceptions.InvalidPriceOperation;
 import tradable.Tradable;
 import tradable.TradableDTO;
 import tradable.exceptions.InvalidVolumeException;
@@ -187,10 +186,15 @@ public class ProductBookSide {
             Tradable t = iterator.next();
             if (t.getId().equals(orderId)) {
               isFound = true;
-              MessagePublisher.getInstance().publishCancel(new CancelMessage(
-                      t.getUser(), t.getProduct(), t.getPrice(),
-                      t.getRemainingVolume(), "Canceling order with order ID: " +
-                      t.getId(), t.getSide(), t.getId()));
+              try {
+				MessagePublisher.getInstance().publishCancel(new CancelMessage(
+				          t.getUser(), t.getProduct(), t.getPrice(),
+				          t.getRemainingVolume(), "Canceling order with order ID: ",
+				          t.getSide(), t.getId()));
+			} catch (InvalidPriceOperation e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
                       addOldEntry(t);
             }
           }
@@ -204,10 +208,15 @@ public class ProductBookSide {
           throws InvalidMessageException {
         TradableDTO quote = removeQuote(userName);
         if (quote != null) {
-          MessagePublisher.getInstance().publishCancel(new CancelMessage(
-                  quote.user, quote.product, quote.price, quote.remainingVolume,
-                  "Quote " + quote.side + "-Side Cancelled.", quote.side,
-                  quote.id));
+          try {
+			MessagePublisher.getInstance().publishCancel(new CancelMessage(
+			          quote.user, quote.product, quote.price, quote.remainingVolume,
+			          "Quote ",quote.side,
+			          quote.id));
+		} catch (InvalidPriceOperation e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         }
     }
     

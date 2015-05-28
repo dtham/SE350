@@ -80,7 +80,7 @@ public class TradeProcessorPriceTimeImpl implements TradeProcessor {
                 tPrice = t.getPrice();
               }
               FillMessage tFill = new FillMessage(t.getUser(), t.getProduct(),
-                      tPrice, t.getRemainingVolume(), "leaving " + 0 , t.getSide(),
+                      tPrice, t.getRemainingVolume(), "leaving " , t.getSide(),
                       t.getId());
               addFillMessage(tFill);
               FillMessage trdFill = new FillMessage (trd.getUser(), t.getProduct(),
@@ -125,4 +125,4 @@ public class TradeProcessorPriceTimeImpl implements TradeProcessor {
       }
         }
     
-}
+

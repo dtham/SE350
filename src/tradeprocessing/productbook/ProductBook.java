@@ -7,10 +7,13 @@ package tradeprocessing.productbook;
 
 import constants.GlobalConstants.BookSide;
 import constants.GlobalConstants.MarketState;
+
 import java.util.*;
 import java.util.Map.Entry;
+
 import price.Price;
 import price.PriceFactory;
+import price.exceptions.InvalidPriceOperation;
 import tradable.Tradable;
 import tradable.Order;
 import tradable.Quote;
@@ -23,6 +26,7 @@ import publishers.message.CancelMessage;
 import publishers.message.FillMessage;
 import publishers.message.MarketDataDTO;
 import publishers.message.exceptions.InvalidMessageException;
+import publishers.message.exceptions.InvalidPublisherOperation;
 import tradeprocessing.productbook.exceptions.InvalidProductBookSideValueException;
 import tradeprocessing.productbook.exceptions.ProductBookException;
 import tradeprocessing.productbook.exceptions.OrderNotFoundException;
@@ -81,11 +85,15 @@ public class ProductBook {
             Tradable t = iterator.next();
             if (t.getId().equals(orderId)) {
               isFound = true;
-              MessagePublisher.getInstance().publishCancel(new CancelMessage(
-                      t.getUser(), t.getProduct(), t.getPrice(),
-                      // is this remaining volume or cancelled volume
-                      t.getRemainingVolume(), "Too late to cancel order ID: " +
-                      t.getId(), t.getSide(), t.getId()));
+              try {
+				MessagePublisher.getInstance().publishCancel(new CancelMessage(
+				          t.getUser(), t.getProduct(), t.getPrice(),
+				          t.getRemainingVolume(), "Too late to cancel order ID: ",
+				           t.getSide(), t.getId()));
+			} catch (InvalidPriceOperation e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
             }
           }
         }
@@ -138,7 +146,12 @@ public class ProductBook {
           HashMap<String, FillMessage> allFills = null;
           ArrayList<Tradable> toRemove = new ArrayList<>();
           for (Tradable t : topOfBuySide) {
-            allFills = sellSide.tryTrade(t);
+            try {
+				allFills = sellSide.tryTrade(t);
+			} catch (InvalidPublisherOperation e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
             if (t.getRemainingVolume() == 0) {
               toRemove.add(t);
             }
@@ -217,10 +230,74 @@ public class ProductBook {
       }
      
     public synchronized final void addToBook(Order o)
-          throws InvalidMessageException, InvalidVolumeException {
-        addToBook(o.getSide(), o);
-        updateCurrentMarket();
+      throws InvalidMessageException, InvalidVolumeException {
+      addToBook(o.getSide(), o);
+       updateCurrentMarket();
     }
+    
+    @SuppressWarnings("unused")
+	private synchronized void addToBook(String side, Tradable trd) 
+            throws InvalidMessageException, InvalidPriceOperation{
+        if(ProductService.getInstance().getMarketState().equals(MarketState.PREOPEN)){
+            if(side.equals("BUY")){
+                buySide.addToBook(trd);
+                }
+            else{
+                sellSide.addToBook(trd);
+                }
+            return;
+        }
+        HashMap<String, FillMessage> allFills = null;
+        
+        if(side.equals("BUY")){
+            try {
+				allFills = sellSide.tryTrade(trd);
+			} catch (InvalidVolumeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvalidPublisherOperation e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+        else{
+            try {
+				allFills = buySide.tryTrade(trd);
+			} catch (InvalidVolumeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvalidPublisherOperation e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+        if(allFills != null && !allFills.isEmpty()){
+            updateCurrentMarket();
+            int volDifference = trd.getOriginalVolume() - trd.getRemainingVolume();
+            Price lastSalePrice = determineLastSalePrice(allFills);
+            LastSalePublisher.getInstance().publishLastSale( symbol, lastSalePrice, volDifference);
+        }
+        if(trd.getRemainingVolume() > 0){
+            if(trd.getPrice().isMarket()){
+                try {
+                    CancelMessage c = new CancelMessage(trd.getUser(), trd.getProduct(),
+                            trd.getPrice(), trd.getRemainingVolume(),
+                            "Cancelled", trd.getSide(), trd.getId());
+                    MessagePublisher.getInstance().publishCancel(c);
+                } catch (InvalidMessageException e) {
+                    System.out.println(e);
+                    e.printStackTrace();
+                }
+            }
+            else if(trd.getSide().equals("BUY")){
+                buySide.addToBook(trd);
+            }
+            else{
+                sellSide.addToBook(trd);
+            }
+        }
+    }
+
     
     public synchronized final void updateCurrentMarket() {
         String var = buySide.topOfBookPrice() +
@@ -268,9 +345,19 @@ public class ProductBook {
         }
         HashMap<String, FillMessage> allFills = null;
         if (side.equals(BookSide.BUY)) {
-          allFills = sellSide.tryTrade(trd);
+          try {
+			allFills = sellSide.tryTrade(trd);
+		} catch (InvalidPublisherOperation e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         } else {
-          allFills = buySide.tryTrade(trd);
+          try {
+			allFills = buySide.tryTrade(trd);
+		} catch (InvalidPublisherOperation e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         }
         if (allFills != null && !allFills.isEmpty()) {
           updateCurrentMarket();
@@ -281,11 +368,15 @@ public class ProductBook {
         }
         if (trd.getRemainingVolume() > 0) {
           if (trd.getPrice().isMarket()) {
-              MessagePublisher.getInstance().publishCancel(new CancelMessage(
-                      trd.getUser(), trd.getProduct(), trd.getPrice(),
-                      // is this remaining volume or cancelled volume
-                      trd.getRemainingVolume(), "Canceling order with order ID: " +
-                      trd.getId(), trd.getSide(), trd.getId()));
+              try {
+				MessagePublisher.getInstance().publishCancel(new CancelMessage(
+				          trd.getUser(), trd.getProduct(), trd.getPrice(),
+				          trd.getRemainingVolume(), "Canceling order with order ID: ",
+				           trd.getSide(), trd.getId()));
+			} catch (InvalidPriceOperation e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
           } else {
             if (side.equals(BookSide.BUY)) {
               buySide.addToBook(trd);
