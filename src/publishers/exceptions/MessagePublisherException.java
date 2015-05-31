@@ -3,12 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package client;
+package publishers.exceptions;
 
 /**
  *
  * @author Daryl's
  */
-public class temp {
+public class MessagePublisherException extends Exception{
+    public MessagePublisherException(String msg){
+        super(msg);
+    }
     
 }

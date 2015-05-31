@@ -4,12 +4,16 @@ package driver;
 
 import client.User;
 import client.UserImpl;
+import client.UserImplFactory;
+import constants.GlobalConstants.BookSide;
+import constants.GlobalConstants.MarketState;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import price.PriceFactory;
-import product.ProductService;
+import tradeprocessing.productservice.ProductService;
 
-
-public class Phase4Main {
+public class main {
 
     private static ArrayList<User> users = new ArrayList<User>();
     private static int testCount = 1;

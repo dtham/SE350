@@ -9,13 +9,14 @@ public class Order implements Tradable{
     
     private Tradable order;
     
-    public Order(String userName, String productSymbols, Price orderPrice, int originalVolume, String side)
+    public Order(String userName, String productSymbols, Price orderPrice, int originalVolume, 
+            BookSide side)
                 throws InvalidVolumeException{
         BookSide tempside = null;
-        if(side == "BUY"){
+        if(side.equals("BUY")){
             tempside = BookSide.BUY;
         }
-        else if (side == "SELL"){
+        else if (side.equals("SELL")){
             tempside = BookSide.SELL;
         }
         order = new TradableImpl(userName, productSymbols, orderPrice, originalVolume,
