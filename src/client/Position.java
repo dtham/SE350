@@ -1,10 +1,10 @@
 package client;
 
+import client.exceptions.PositionException;
+import constants.GlobalConstants.BookSide;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import client.exceptions.EmptyParameterException;
-import constants.GlobalConstants.BookSide;
 import price.Price;
 import price.PriceFactory;
 import price.exceptions.InvalidPriceOperation;
@@ -12,148 +12,104 @@ import price.exceptions.InvalidPriceOperation;
 
 public class Position 
 {
-	HashMap<String, Integer> holdings = new HashMap<String, Integer>();
-	Price accountCosts;
-	HashMap<String, Price> lastSales = new HashMap<String, Price>();
-	
-	
-	public Position() throws InvalidPriceOperation
-	{
-		accountCosts = PriceFactory.makeLimitPrice(0);
-	}
-	
-	
-	public void updatePosition(String product, Price price, BookSide side, int volume) throws InvalidPriceOperation, EmptyParameterException
-	{
-		if ((product == null) || (product.length() < 1) || (price == null) || (side == null))
-		{
-			throw new EmptyParameterException("Values cannot be null or empty.");
-		}
-		else
-		{
-			int adjustedVolume;
-			if (side == BookSide.BUY)
-			{
-				adjustedVolume = volume;
-			}
-			else 
-			{
-				adjustedVolume = volume * (-1);
-			}
-			if (!holdings.containsKey(product))
-			{
-				holdings.put(product, adjustedVolume);			
-			}
-			else 
-			{
-				int stockOwn = holdings.get(product) + adjustedVolume;
-				if (stockOwn == 0)
-				{
-					holdings.remove(product);
-				}
-				else
-				{
-					holdings.put(product, stockOwn);
-				}
-			}
-			Price totalPrice = price.multiply(volume);
-			if (side == BookSide.BUY)
-			{
-				accountCosts = accountCosts.subtract(totalPrice);
-			}
-			else 
-			{
-				accountCosts = accountCosts.add(totalPrice);
-			}
-		}
-	}
-	
-	
-	public void updateLastSale(String product, Price price) throws EmptyParameterException
-	{
-		if ((product == null) || (product.length() < 1) || (price == null))
-		{
-			throw new EmptyParameterException("Values cannot be null or empty.");
-		}
-		else
-		{
-			lastSales.put(product, price);
-		}
-	}
-	
+    HashMap<String, Integer> holdings;
+    Price accountCosts;
+    HashMap<String, Price> lastSales = new HashMap<>();
+  
+    public Position() {
+      holdings = new HashMap<>();
+      accountCosts = PriceFactory.makeLimitPrice(0);
+    }
 
-	public int getStockPositionVolume(String product) throws EmptyParameterException
-	{
-		if ((product == null) || (product.length() < 1))
-		{
-			throw new EmptyParameterException("Product cannot be null or empty.");
-		}
-		else
-		{
-			if (holdings.containsKey(product))
-			{
-				return holdings.get(product);
-			}
-			else
-			{
-				return 0;
-			}
-		}
-	}
-	
+    public void updatePosition(String product, Price price,
+            BookSide side, int volume) throws PositionException,
+            InvalidPriceOperation {
+      if (product == null || product.isEmpty()) {
+        throw new PositionException("Argument product in updatePosition cannot"
+                + " be empty.");
+      }
+      if (price == null) {
+        throw new PositionException("Argument price in updatePosition cannot"
+                + " be empty.");
+      }
+      int adjustedVolume = (side.equals(BookSide.BUY) ? volume : -volume);
+      if (!holdings.containsKey(product)) {
+        holdings.put(product, adjustedVolume);
+      } else {
+        int resultingVolume = holdings.get(product) + adjustedVolume;
+        if (resultingVolume == 0) {
+          holdings.remove(product);
+        } else {
+          holdings.put(product, resultingVolume);
+        }
+      }
+      Price totalPrice = price.multiply(volume);
+      if (side.equals(BookSide.BUY)) {
+        accountCosts = accountCosts.subtract(totalPrice);
+      } else {
+        accountCosts = accountCosts.add(totalPrice);
+      }
+    }
 
-	public ArrayList<String> getHoldings()
-	{
-		ArrayList<String> h = new ArrayList<String>(holdings.keySet());
-		Collections.sort(h);
-		return h;
-	}
-	
+    public void updateLastSale(String product, Price price)
+            throws PositionException {
+      if (product == null || product.isEmpty()) {
+        throw new PositionException("Argument product in updateLastSale cannot"
+                + " be empty.");
+      }
+      if (price == null) {
+        throw new PositionException("Argument price in updateLastSale cannot"
+                + " be empty.");
+      }
+      lastSales.put(product, price);
+    }
 
-	public Price getStockPositionValue(String product) throws InvalidPriceOperation, EmptyParameterException
-	{
-		if ((product == null) || (product.length() < 1))
-		{
-			throw new EmptyParameterException("Product cannot be null or empty.");
-		}
-		else
-		{
-			if (!holdings.containsKey(product))
-			{
-				return PriceFactory.makeLimitPrice(0);
-			}
-			else
-			{
-				Price lastSalePrice = lastSales.get(product);
-				if (lastSalePrice == null)
-				{
-					return PriceFactory.makeLimitPrice(0);
-				}
-				Price positionValue = lastSalePrice.multiply(holdings.get(product));
-				return positionValue;
-			}
-		}
-	}
-	
+    public int getStockPositionVolume(String product) throws PositionException {
+      if (product == null || product.isEmpty()) {
+        throw new PositionException("Argument product in getStockPositionVolume"
+                + " cannot be empty.");
+      }
+      if (!holdings.containsKey(product)) { return 0; }
+      return holdings.get(product);
+    }
 
-	public Price getAccountCosts()
-	{
-		return accountCosts;
-	}
-	
+    public ArrayList<String> getHoldings() {
+      ArrayList<String> h = new ArrayList<>(holdings.keySet());
+      Collections.sort(h);
+      return h;
+    }
 
-	public Price getAllStockValue() throws InvalidPriceOperation, EmptyParameterException
-	{
-		Price result = PriceFactory.makeLimitPrice(0);
-		for (String holdingProduct : holdings.keySet())
-		{
-			result = result.add(getStockPositionValue(holdingProduct));
-		}
-		return result;
-	}
-	
-	public Price getNetAccountValue() throws InvalidPriceOperation, EmptyParameterException
-	{
-		return getAllStockValue().add(accountCosts);
-	}
-}
+    public Price getStockPositionValue(String product)
+            throws PositionException, InvalidPriceOperation {
+      if (product == null || product.isEmpty()) {
+        throw new PositionException("Argument product in getStockPositionValue"
+                + " cannot be empty.");
+      }
+      if (!holdings.containsKey(product)) {
+        return PriceFactory.makeLimitPrice(0);
+      }
+      Price lastPrice = lastSales.get(product);
+      if (lastPrice == null) {
+        lastPrice = PriceFactory.makeLimitPrice(0);
+      }
+      return lastPrice.multiply(holdings.get(product));
+    }
+
+    public Price getAccountCosts() {
+      return accountCosts;
+    }
+
+    public Price getAllStockValue()
+            throws InvalidPriceOperation, PositionException {
+      Price sum = PriceFactory.makeLimitPrice(0);
+      for (String key : holdings.keySet()) {
+        sum = sum.add(getStockPositionValue(key));
+      }
+      return sum;
+    }
+
+    public Price getNetAccountValue()
+            throws PositionException, InvalidPriceOperation {
+      return getAllStockValue().add(getAccountCosts());
+    }
+  }

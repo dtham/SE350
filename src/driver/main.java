@@ -58,7 +58,7 @@ public class main {
             System.out.println();
 
             System.out.println("F) Put the market in PREOPEN state");
-            ProductService.getInstance().setMarketState(<PREOPEN>);
+            ProductService.getInstance.setMarketState(<PREOPEN>);
             System.out.println();
 
             System.out.println("G) User ANN queries market state");
