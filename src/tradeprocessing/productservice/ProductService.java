@@ -16,10 +16,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import price.exceptions.InvalidPriceOperation;
 import publishers.MessagePublisher;
 import publishers.message.MarketDataDTO;
 import publishers.message.MarketMessage;
 import publishers.message.exceptions.InvalidMessageException;
+import publishers.message.exceptions.InvalidPublisherOperation;
 import tradable.Order;
 import tradable.Quote;
 import tradable.TradableDTO;
@@ -34,6 +36,7 @@ import tradeprocessing.productbook.exceptions.ProductBookSideException;
 import tradeprocessing.productservice.exceptions.InvalidMarketStateException;
 import tradeprocessing.productservice.exceptions.InvalidMarketStateTransitionException;
 import tradeprocessing.tradeprocessor.exceptions.InvalidProductBookSideValueException;
+import tradeprocessing.tradeprocessor.exceptions.TradeProcessorPriceTimeImplException;
 
 public class ProductService {
     private volatile static ProductService instance;
@@ -128,7 +131,8 @@ public class ProductService {
     public synchronized void submitQuote(Quote q)
           throws InvalidMarketStateException, NoSuchProductException,
           InvalidVolumeException, DataValidationException,
-          InvalidMessageException {
+          InvalidMessageException, ProductBookSideException, ProductBookException, 
+          TradeProcessorPriceTimeImplException, InvalidPriceOperation, InvalidPublisherOperation {
         if (state.equals(MarketState.CLOSED)) {
           throw new InvalidMarketStateException("Marekt is closed!");
         }
@@ -140,7 +144,9 @@ public class ProductService {
      
     public synchronized String submitOrder(Order o)
           throws InvalidMarketStateException, NoSuchProductException,
-          InvalidMessageException, InvalidVolumeException {
+          InvalidMessageException, InvalidVolumeException, ProductBookSideException, 
+          ProductBookException, TradeProcessorPriceTimeImplException, InvalidPriceOperation,
+          InvalidPublisherOperation {
         if (state.equals(MarketState.CLOSED)) {
           throw new InvalidMarketStateException("Marekt is closed!");
         }

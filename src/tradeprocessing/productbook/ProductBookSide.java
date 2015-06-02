@@ -310,7 +310,7 @@ public class ProductBookSide {
         }
     }
     
-    public synchronized void removeTradeable(Tradable t) {
+    public synchronized void removeTradable(Tradable t) {
         ArrayList<Tradable> entries = bookEntries.get(t.getPrice());
         if (entries == null) { return; }
         boolean removeOp = entries.remove(t);

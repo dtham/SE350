@@ -69,12 +69,12 @@ public class UserImpl implements User {
 
     @Override
     public void acceptLastSale(String product, Price p, int v) {
-        try {
-           udm.updateLastSale(product, p, v);
-           position.updateLastSale(product, p);
-         } catch (EmptyParameterException ex) { 
+        udm.updateLastSale(product, p, v);
+      try { 
+          position.updateLastSale(product, p);
+      } catch (PositionException ex) {
           Logger.getLogger(UserImpl.class.getName()).log(Level.SEVERE, null, ex);
-      } 
+      }
     }
 
     @Override
@@ -90,7 +90,7 @@ public class UserImpl implements User {
                   fm.getVolume());
         } catch (InvalidPriceOperation ex) {   
           Logger.getLogger(UserImpl.class.getName()).log(Level.SEVERE, null, ex);
-      } catch (EmptyParameterException ex) {
+      } catch (PositionException ex) {
           Logger.getLogger(UserImpl.class.getName()).log(Level.SEVERE, null, ex);
       }   
     }

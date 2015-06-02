@@ -33,6 +33,7 @@ import tradeprocessing.productbook.exceptions.OrderNotFoundException;
 import tradeprocessing.productbook.exceptions.ProductBookSideException;
 import tradeprocessing.productbook.exceptions.DataValidationException;
 import tradeprocessing.productservice.ProductService;
+import tradeprocessing.tradeprocessor.exceptions.TradeProcessorPriceTimeImplException;
 
 
 /**
@@ -157,7 +158,7 @@ public class ProductBook {
             }
           }
           for (Tradable t : toRemove) {
-            buySide.removeTradeable(t);
+            buySide.removeTradable(t);
           }
           updateCurrentMarket();
           Price lastSalePrice = determineLastSalePrice(allFills);
@@ -200,7 +201,7 @@ public class ProductBook {
     
     public synchronized final void addToBook(Quote q)
           throws InvalidVolumeException, DataValidationException,
-          InvalidMessageException {
+          InvalidMessageException, ProductBookSideException, ProductBookException, TradeProcessorPriceTimeImplException, InvalidPriceOperation, InvalidPublisherOperation {
         if (q.getQuoteSide(BookSide.SELL).getPrice().lessOrEqual(
                 q.getQuoteSide(BookSide.BUY).getPrice())) {
           throw new DataValidationException("Sell Price is less than or equal to"
@@ -230,7 +231,9 @@ public class ProductBook {
       }
      
     public synchronized final void addToBook(Order o)
-      throws InvalidMessageException, InvalidVolumeException {
+      throws InvalidMessageException, InvalidVolumeException, ProductBookSideException, 
+            ProductBookException, TradeProcessorPriceTimeImplException, InvalidPriceOperation, 
+            InvalidPublisherOperation {
       addToBook(o.getSide(), o);
        updateCurrentMarket();
     }
@@ -333,57 +336,49 @@ public class ProductBook {
     }
     
     private synchronized void addToBook(BookSide side, Tradable trd)
-          throws InvalidMessageException, InvalidVolumeException {
-        if (ProductService.getInstance().getMarketState().equals(
-                MarketState.PREOPEN)) {
+            throws InvalidMessageException, InvalidVolumeException,
+            ProductBookSideException, ProductBookException,
+            TradeProcessorPriceTimeImplException, InvalidPriceOperation, InvalidPublisherOperation {
+      if (!(side instanceof BookSide)) {
+        throw new ProductBookException("Argument side in addToBook cannot be null"
+                + " or not an instance of BookSide");
+      }
+      if (ProductService.getInstance().getMarketState().equals(
+              MarketState.PREOPEN)) {
+        if (side.equals(BookSide.BUY)) {
+          buySide.addToBook(trd);
+        } else {
+          sellSide.addToBook(trd);
+        }
+        return;
+      }
+      HashMap<String, FillMessage> allFills = null;
+      if (side.equals(BookSide.BUY)) {
+        allFills = sellSide.tryTrade(trd);
+      } else {
+        allFills = buySide.tryTrade(trd);
+      }
+      if (allFills != null && !allFills.isEmpty()) {
+        updateCurrentMarket();
+        int diff = trd.getOriginalVolume() - trd.getRemainingVolume();
+        Price lastSalePrice = determineLastSalePrice(allFills);
+        LastSalePublisher.getInstance().publishLastSale(symbol,
+                lastSalePrice, diff);
+      }
+      if (trd.getRemainingVolume() > 0) {
+        if (trd.getPrice().isMarket()) {
+            MessagePublisher.getInstance().publishCancel(new CancelMessage(
+                    trd.getUser(), trd.getProduct(), trd.getPrice(),
+                    // is this remaining volume or cancelled volume
+                    trd.getRemainingVolume(), trd.getSide() + " Order Cancelled",
+                    trd.getSide(), trd.getId()));
+        } else {
           if (side.equals(BookSide.BUY)) {
             buySide.addToBook(trd);
           } else {
             sellSide.addToBook(trd);
-          }
-          return;
         }
-        HashMap<String, FillMessage> allFills = null;
-        if (side.equals(BookSide.BUY)) {
-          try {
-			allFills = sellSide.tryTrade(trd);
-		} catch (InvalidPublisherOperation e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        } else {
-          try {
-			allFills = buySide.tryTrade(trd);
-		} catch (InvalidPublisherOperation e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        }
-        if (allFills != null && !allFills.isEmpty()) {
-          updateCurrentMarket();
-          int diff = trd.getOriginalVolume() - trd.getRemainingVolume();
-          Price lastSalePrice = determineLastSalePrice(allFills);
-          LastSalePublisher.getInstance().publishLastSale(symbol,
-                  lastSalePrice, diff);
-        }
-        if (trd.getRemainingVolume() > 0) {
-          if (trd.getPrice().isMarket()) {
-              try {
-				MessagePublisher.getInstance().publishCancel(new CancelMessage(
-				          trd.getUser(), trd.getProduct(), trd.getPrice(),
-				          trd.getRemainingVolume(), "Canceling order with order ID: ",
-				           trd.getSide(), trd.getId()));
-			} catch (InvalidPriceOperation e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-          } else {
-            if (side.equals(BookSide.BUY)) {
-              buySide.addToBook(trd);
-            } else {
-              sellSide.addToBook(trd);
-            }
-          }
-        }
+      }
     }
+  }
 }
